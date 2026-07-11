@@ -157,7 +157,7 @@ git pull
 
 ## Notes
 
-- This uses exactly one runtime container: Caddy.
-- Caddy stores HTTPS certificates in the Docker volume `caddy_data`.
+- This uses exactly one runtime container. Inside it, Caddy serves HTTPS/static files and proxies `/api/*` to the Node API.
+- Caddy HTTPS certificates and the small JSON app database are stored in the Docker volume `caddy_data` mounted at `/data`.
 - The large `uploads/` scratch folder is intentionally excluded from Git and Docker builds.
 - External prototype dependencies are loaded from CDN by the UI kit HTML.

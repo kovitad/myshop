@@ -2,21 +2,20 @@
   email kovitad@gmail.com
 }
 
-# Local / IP access. Useful before DNS is pointed at the Lightsail instance.
 :80 {
-  root * /srv
+  root * /srv/dist
   encode gzip zstd
 
   route {
     respond /healthz "ok" 200
+    reverse_proxy /api/* 127.0.0.1:3000
     try_files {path} {path}/ /index.html
     file_server
   }
 }
 
-# Production domain. Caddy automatically provisions and renews HTTPS certificates.
 kovitad.shop, www.kovitad.shop {
-  root * /srv
+  root * /srv/dist
   encode gzip zstd
 
   header {
@@ -24,11 +23,12 @@ kovitad.shop, www.kovitad.shop {
     Referrer-Policy strict-origin-when-cross-origin
   }
 
-  @static path *.css *.js *.jsx *.json *.png *.jpg *.jpeg *.gif *.webp *.bmp *.svg *.ico *.woff *.woff2
+  @static path *.css *.js *.json *.png *.jpg *.jpeg *.gif *.webp *.bmp *.svg *.ico *.woff *.woff2
   header @static Cache-Control "public, max-age=604800"
 
   route {
     respond /healthz "ok" 200
+    reverse_proxy /api/* 127.0.0.1:3000
     try_files {path} {path}/ /index.html
     file_server
   }
