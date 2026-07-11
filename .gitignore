@@ -11,6 +11,16 @@ uploads/
 .tmp/
 tmp/
 
+# Local SQLite database artifacts
+*.db
+*.db-wal
+*.db-shm
+scratch-*.db*
+
+# Secrets
+.env
+.env.local
+
 # Dependency/build folders and TypeScript/Vite artifacts
 node_modules/
 dist/

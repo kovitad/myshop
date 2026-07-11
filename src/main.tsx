@@ -14,7 +14,18 @@ import {
 import './styles.css';
 
 type Lang = 'th' | 'en';
-type Route = '/' | '/library' | '/articles/sleep-rhythm';
+type Route = string;
+
+const ROUTES = [
+  '/',
+  '/library',
+  '/articles/sleep-rhythm',
+  '/order/success',
+  '/order/cancelled',
+  '/privacy',
+  '/terms',
+  '/refund',
+];
 
 const copy = {
   th: {
@@ -44,6 +55,22 @@ const copy = {
     email: 'อีเมลของคุณ',
     subscribe: 'สมัครรับข่าวสาร',
     footer: 'สิ่งพิมพ์ด้านสุขภาพและอายุยืนสำหรับชีวิตจริง',
+    getGuide: 'รับคู่มือ',
+    paymentsSoon: 'ระบบชำระเงินกำลังจะเปิดใช้งานเร็ว ๆ นี้',
+    checkoutError: 'เริ่มการชำระเงินไม่สำเร็จ กรุณาลองใหม่',
+    successEyebrow: 'ขอบคุณ',
+    successTitle: 'การสั่งซื้อสำเร็จ',
+    successBody: 'คู่มือของคุณพร้อมแล้ว เราได้ส่งลิงก์ดาวน์โหลดไปที่อีเมลของคุณด้วย',
+    successDownload: 'ดาวน์โหลดคู่มือ',
+    successPending: 'กำลังยืนยันการชำระเงิน หากยังไม่พร้อม ให้รีเฟรชอีกครั้งในสักครู่ ลิงก์ดาวน์โหลดจะถูกส่งไปที่อีเมลของคุณ',
+    successError: 'ไม่พบข้อมูลคำสั่งซื้อ หากคุณชำระเงินแล้ว โปรดตรวจสอบอีเมลของคุณ',
+    cancelTitle: 'ยกเลิกการชำระเงินแล้ว',
+    cancelBody: 'ยังไม่มีการเรียกเก็บเงิน คุณสามารถกลับมาเลือกคู่มือได้ทุกเมื่อ',
+    backHome: 'กลับหน้าแรก',
+    backLibrary: 'ดูคลังความรู้',
+    privacyNav: 'ความเป็นส่วนตัว',
+    termsNav: 'เงื่อนไขการใช้งาน',
+    refundNav: 'นโยบายการคืนเงิน',
   },
   en: {
     nav: { home: 'Home', library: 'Library', article: 'Sample article' },
@@ -72,6 +99,22 @@ const copy = {
     email: 'Your email',
     subscribe: 'Subscribe',
     footer: 'A wellness and longevity publication for real life',
+    getGuide: 'Get the guide',
+    paymentsSoon: 'Payments are opening soon.',
+    checkoutError: 'Could not start checkout. Please try again.',
+    successEyebrow: 'Thank you',
+    successTitle: 'Your order is complete',
+    successBody: 'Your guide is ready. We have also emailed the download link to you.',
+    successDownload: 'Download your guide',
+    successPending: 'We are confirming your payment. If it is not ready, refresh in a moment — your download link is also on its way by email.',
+    successError: 'We could not find this order. If you have paid, please check your email.',
+    cancelTitle: 'Payment cancelled',
+    cancelBody: 'You have not been charged. You can return to the guides whenever you are ready.',
+    backHome: 'Back to home',
+    backLibrary: 'Browse library',
+    privacyNav: 'Privacy',
+    termsNav: 'Terms',
+    refundNav: 'Refunds',
   },
 };
 
@@ -88,11 +131,74 @@ const guides = [
   { id: 'walking-reset', titleTh: 'เริ่มเดินให้เป็นระบบใน 14 วัน', titleEn: 'A 14-day walking reset', price: '฿250', tag: 'Movement' },
 ];
 
+const legal = {
+  privacy: {
+    th: {
+      eyebrow: 'ความเป็นส่วนตัว',
+      title: 'นโยบายความเป็นส่วนตัว',
+      body: [
+        'KOVITAD.shop เก็บข้อมูลเท่าที่จำเป็นในการให้บริการ ได้แก่ อีเมล ชื่อ และรายละเอียดคำสั่งซื้อ เพื่อส่งมอบคู่มือดิจิทัลและติดต่อคุณเกี่ยวกับคำสั่งซื้อ',
+        'การชำระเงินดำเนินการโดย Stripe เราไม่จัดเก็บหมายเลขบัตรของคุณบนเซิร์ฟเวอร์ของเรา',
+        'หากคุณสมัครรับจดหมายข่าว เราจะใช้อีเมลของคุณเพื่อส่งเนื้อหาเป็นครั้งคราวเท่านั้น และคุณสามารถยกเลิกได้ทุกเมื่อ',
+        'ต้องการให้ลบข้อมูลของคุณ ติดต่อ hello@kovitad.shop',
+      ],
+    },
+    en: {
+      eyebrow: 'Privacy',
+      title: 'Privacy policy',
+      body: [
+        'KOVITAD.shop collects only what is needed to run the service: your email, name, and order details, so we can deliver your digital guides and contact you about your order.',
+        'Payments are processed by Stripe. We do not store your card number on our servers.',
+        'If you subscribe to the newsletter, we use your email only to send occasional content, and you can unsubscribe at any time.',
+        'To request deletion of your data, contact hello@kovitad.shop.',
+      ],
+    },
+  },
+  terms: {
+    th: {
+      eyebrow: 'เงื่อนไขการใช้งาน',
+      title: 'เงื่อนไขการใช้งาน',
+      body: [
+        'เนื้อหาและคู่มือของ KOVITAD.shop เป็นการให้ความรู้ทั่วไปและประสบการณ์ส่วนตัว ไม่ใช่คำแนะนำทางการแพทย์ ควรปรึกษาแพทย์ก่อนเปลี่ยนแปลงกิจวัตรสุขภาพ',
+        'เมื่อซื้อคู่มือดิจิทัล คุณได้รับสิทธิ์ใช้งานส่วนบุคคล ไม่ใช่เพื่อการจำหน่ายต่อหรือเผยแพร่ซ้ำ',
+        'เราอาจปรับปรุงเนื้อหาและราคาเป็นครั้งคราว การเปลี่ยนแปลงจะมีผลกับคำสั่งซื้อใหม่เท่านั้น',
+      ],
+    },
+    en: {
+      eyebrow: 'Terms',
+      title: 'Terms of use',
+      body: [
+        'KOVITAD.shop content and guides are general education and personal experience, not medical advice. Talk to your clinician before changing your health routine.',
+        'When you buy a digital guide you receive a personal-use licence. It is not for resale or redistribution.',
+        'We may update content and pricing from time to time. Changes apply to new orders only.',
+      ],
+    },
+  },
+  refund: {
+    th: {
+      eyebrow: 'นโยบายการคืนเงิน',
+      title: 'นโยบายการคืนเงิน',
+      body: [
+        'คู่มือดิจิทัลเป็นสินค้าที่ส่งมอบทันที โดยทั่วไปจึงไม่สามารถคืนเงินได้หลังจากดาวน์โหลดแล้ว',
+        'หากลิงก์ดาวน์โหลดมีปัญหา ไฟล์เสียหาย หรือคุณถูกเรียกเก็บเงินผิดพลาด กรุณาติดต่อเราภายใน 14 วัน เรายินดีช่วยแก้ไขหรือคืนเงินตามความเหมาะสม',
+        'ติดต่อ hello@kovitad.shop พร้อมอีเมลที่ใช้สั่งซื้อ',
+      ],
+    },
+    en: {
+      eyebrow: 'Refunds',
+      title: 'Refund policy',
+      body: [
+        'Digital guides are delivered instantly, so they are generally non-refundable once downloaded.',
+        'If a download link fails, a file is corrupted, or you were charged in error, contact us within 14 days and we will gladly help or refund where appropriate.',
+        'Reach us at hello@kovitad.shop with the email you used to order.',
+      ],
+    },
+  },
+};
+
 function getRoute(): Route {
   const path = window.location.pathname;
-  if (path === '/library') return '/library';
-  if (path === '/articles/sleep-rhythm') return '/articles/sleep-rhythm';
-  return '/';
+  return ROUTES.includes(path) ? path : '/';
 }
 
 function App() {
@@ -126,6 +232,11 @@ function App() {
         {route === '/' && <Home lang={lang} nav={nav} />}
         {route === '/library' && <Library lang={lang} nav={nav} />}
         {route === '/articles/sleep-rhythm' && <Article lang={lang} nav={nav} />}
+        {route === '/order/success' && <OrderSuccess lang={lang} nav={nav} />}
+        {route === '/order/cancelled' && <OrderCancelled lang={lang} nav={nav} />}
+        {(route === '/privacy' || route === '/terms' || route === '/refund') && (
+          <LegalPage kind={route.slice(1) as LegalKind} lang={lang} />
+        )}
       </main>
       <Footer lang={lang} nav={nav} />
     </>
@@ -260,14 +371,27 @@ function TopicCard({ topic, lang }: { topic: typeof topics[number]; lang: Lang }
 function GuideGrid({ lang }: { lang: Lang }) {
   const t = copy[lang];
   const [note, setNote] = React.useState('');
-  const order = async (guide: typeof guides[number]) => {
-    const email = window.prompt(lang === 'th' ? 'ใส่อีเมลสำหรับจองคู่มือ' : 'Enter your email to reserve this guide');
-    if (!email) return;
-    const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, productId: guide.id }) });
-    const data = await res.json().catch(() => ({}));
-    setNote(res.ok ? (lang === 'th' ? 'บันทึกคำสั่งซื้อแล้ว ขั้นต่อไปคือเชื่อมต่อระบบชำระเงิน' : 'Order reserved. Payment provider is the next step.') : (data.error || 'Something went wrong'));
+  const [busy, setBusy] = React.useState('');
+  const buy = async (guide: typeof guides[number]) => {
+    setNote('');
+    setBusy(guide.id);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: guide.id }),
+      });
+      if (res.status === 503) { setNote(t.paymentsSoon); return; }
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) { window.location.href = data.url; return; }
+      setNote(data.error || t.checkoutError);
+    } catch {
+      setNote(t.checkoutError);
+    } finally {
+      setBusy('');
+    }
   };
-  return <><div className="guide-grid">{guides.map((guide) => <article className="guide-card k-shine" key={guide.titleEn}><p className="k-eyebrow">{guide.tag}</p><h3>{lang === 'th' ? guide.titleTh : guide.titleEn}</h3><p>{lang === 'th' ? 'ไฟล์ดิจิทัล อ่านง่าย พร้อมขั้นตอนเล็ก ๆ ที่ทำได้จริง' : 'A readable digital guide with practical steps you can repeat.'}</p><div><strong>{guide.price}</strong><button onClick={() => order(guide)}>{t.readGuide}</button></div></article>)}</div>{note && <p className="inline-note">{note}</p>}</>;
+  return <><div className="guide-grid">{guides.map((guide) => <article className="guide-card k-shine" key={guide.titleEn}><p className="k-eyebrow">{guide.tag}</p><h3>{lang === 'th' ? guide.titleTh : guide.titleEn}</h3><p>{lang === 'th' ? 'ไฟล์ดิจิทัล อ่านง่าย พร้อมขั้นตอนเล็ก ๆ ที่ทำได้จริง' : 'A readable digital guide with practical steps you can repeat.'}</p><div><strong>{guide.price}</strong><button onClick={() => buy(guide)} disabled={busy === guide.id}>{t.getGuide}</button></div></article>)}</div>{note && <p className="inline-note">{note}</p>}</>;
 }
 
 function Newsletter({ lang, compact = false }: { lang: Lang; compact?: boolean }) {
@@ -297,9 +421,85 @@ function RegisterSection({ lang }: { lang: Lang }) {
   return <section className="register-section"><p className="k-eyebrow">MEMBER ACCESS</p><h2>{lang === 'th' ? 'สมัครสมาชิกแบบเรียบง่าย' : 'Simple member registration'}</h2><p>{lang === 'th' ? 'สร้างบัญชีเพื่อเตรียมรับคอนเทนต์และคู่มือดิจิทัลในระยะถัดไป' : 'Create an account for future content access and digital guides.'}</p><form className="register-form" onSubmit={submit}><input value={name} onChange={(e) => setName(e.target.value)} placeholder={lang === 'th' ? 'ชื่อ' : 'Name'} /><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={lang === 'th' ? 'อีเมล' : 'Email'} /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={lang === 'th' ? 'รหัสผ่านอย่างน้อย 8 ตัวอักษร' : 'Password, at least 8 characters'} /><button className="button primary" type="submit">{lang === 'th' ? 'สร้างบัญชี' : 'Create account'}</button><span className="inline-note">{note}</span></form></section>;
 }
 
+function OrderSuccess({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const t = copy[lang];
+  const [state, setState] = React.useState<'loading' | 'paid' | 'pending' | 'error'>('loading');
+  const [downloadUrl, setDownloadUrl] = React.useState('');
+
+  React.useEffect(() => {
+    const sessionId = new URLSearchParams(window.location.search).get('session_id');
+    if (!sessionId) { setState('error'); return; }
+    let cancelled = false;
+    let tries = 0;
+    const poll = async () => {
+      tries += 1;
+      try {
+        const res = await fetch(`/api/orders/session/${encodeURIComponent(sessionId)}`);
+        if (!res.ok) { if (tries < 8 && !cancelled) setTimeout(poll, 1500); else setState('error'); return; }
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.status === 'paid') { setDownloadUrl(data.downloadUrl || ''); setState('paid'); }
+        else if (tries < 8) setTimeout(poll, 1500);
+        else setState('pending');
+      } catch {
+        if (tries < 8 && !cancelled) setTimeout(poll, 1500); else setState('error');
+      }
+    };
+    poll();
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <section className="page container order-status">
+      <p className="k-eyebrow">{t.successEyebrow}</p>
+      <h1>{state === 'error' ? t.successError : state === 'pending' ? t.successPending : t.successTitle}</h1>
+      {state === 'loading' && <p className="lede">…</p>}
+      {state === 'paid' && (
+        <>
+          <p className="lede">{t.successBody}</p>
+          {downloadUrl && <a className="button primary k-shine" href={downloadUrl}>{t.successDownload}</a>}
+        </>
+      )}
+      <div className="order-actions">
+        <button className="button secondary" onClick={() => nav('/library')}>{t.backLibrary}</button>
+        <button className="text-link" onClick={() => nav('/')}>{t.backHome}</button>
+      </div>
+      <aside className="disclaimer"><Check size={18} /><p>{t.disclaimer}</p></aside>
+    </section>
+  );
+}
+
+function OrderCancelled({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const t = copy[lang];
+  return (
+    <section className="page container order-status">
+      <p className="k-eyebrow">KOVITAD.shop</p>
+      <h1>{t.cancelTitle}</h1>
+      <p className="lede">{t.cancelBody}</p>
+      <div className="order-actions">
+        <button className="button primary" onClick={() => nav('/library')}>{t.backLibrary}</button>
+        <button className="text-link" onClick={() => nav('/')}>{t.backHome}</button>
+      </div>
+    </section>
+  );
+}
+
+type LegalKind = 'privacy' | 'terms' | 'refund';
+
+function LegalPage({ kind, lang }: { kind: LegalKind; lang: Lang }) {
+  const doc = legal[kind][lang];
+  return (
+    <section className="page container legal">
+      <p className="k-eyebrow">{doc.eyebrow}</p>
+      <h1>{doc.title}</h1>
+      {doc.body.map((para, i) => <p key={i}>{para}</p>)}
+    </section>
+  );
+}
+
 function Footer({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const t = copy[lang];
-  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/articles/sleep-rhythm')}>{t.nav.article}</button></nav></footer>;
+  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/articles/sleep-rhythm')}>{t.nav.article}</button><button onClick={() => nav('/privacy')}>{t.privacyNav}</button><button onClick={() => nav('/terms')}>{t.termsNav}</button><button onClick={() => nav('/refund')}>{t.refundNav}</button></nav></footer>;
 }
 
 createRoot(document.getElementById('root')!).render(<App />);

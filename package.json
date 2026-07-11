@@ -6,14 +6,18 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "start": "node server/index.js",
+    "dev:api": "node --env-file=.env --watch server/index.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "stripe": "^22.3.1",
     "typescript": "latest",
     "vite": "latest"
   },
