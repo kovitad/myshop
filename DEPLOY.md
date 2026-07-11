@@ -1,12 +1,17 @@
 # Deploy to AWS Lightsail with one Docker container
 
-This repo is packaged as a static nginx container. It serves the KOVITAD.shop bilingual UI kit and design system files.
+This repo is packaged as a static Caddy container. It serves the KOVITAD.shop bilingual UI kit and automatically provisions HTTPS for:
+
+```text
+https://kovitad.shop
+https://www.kovitad.shop
+```
 
 ## Local test
 
 ```bash
-docker build -t kovitad-myshop .
-docker run --rm -p 8080:80 kovitad-myshop
+docker build -t kovitad-shop .
+docker run --rm -p 8080:80 kovitad-shop
 ```
 
 Open:
@@ -25,7 +30,41 @@ curl http://localhost:8080/healthz
 
 Recommended instance: Ubuntu on a 1 GB Lightsail plan.
 
-### 1. Install Docker
+### 1. Point DNS to Lightsail
+
+In AWS Lightsail:
+
+1. Create or open your instance.
+2. Attach a **static IP**.
+3. In your domain DNS provider, add these records:
+
+```text
+A      @      YOUR_LIGHTSAIL_STATIC_IP
+A      www    YOUR_LIGHTSAIL_STATIC_IP
+```
+
+Wait for DNS propagation. You can check with:
+
+```bash
+dig +short kovitad.shop
+dig +short www.kovitad.shop
+```
+
+Both should return your Lightsail static IP.
+
+### 2. Open firewall ports
+
+In the Lightsail Networking tab, allow:
+
+```text
+TCP 80
+TCP 443
+UDP 443
+```
+
+UDP 443 is optional but enables HTTP/3.
+
+### 3. Install Docker
 
 ```bash
 sudo apt-get update
@@ -46,35 +85,59 @@ Log out and back in, or run:
 newgrp docker
 ```
 
-### 2. Clone and run
+### 4. Clone and run one container
 
 ```bash
 git clone https://github.com/kovitad/myshop.git
 cd myshop
-docker build -t kovitad-myshop .
+docker build -t kovitad-shop .
 docker run -d \
-  --name kovitad-myshop \
+  --name kovitad-shop \
   --restart unless-stopped \
   -p 80:80 \
-  kovitad-myshop
+  -p 443:443 \
+  -p 443:443/udp \
+  -v caddy_data:/data \
+  -v caddy_config:/config \
+  kovitad-shop
 ```
 
-### 3. Update deployment later
+Caddy will request the SSL certificate automatically once DNS points to the server.
+
+### 5. Verify
+
+```bash
+curl http://YOUR_LIGHTSAIL_STATIC_IP/healthz
+curl https://kovitad.shop/healthz
+```
+
+Open:
+
+```text
+https://kovitad.shop
+```
+
+### 6. Update deployment later
 
 ```bash
 cd ~/myshop
 git pull
-docker build -t kovitad-myshop .
-docker rm -f kovitad-myshop
+docker build -t kovitad-shop .
+docker rm -f kovitad-shop
 docker run -d \
-  --name kovitad-myshop \
+  --name kovitad-shop \
   --restart unless-stopped \
   -p 80:80 \
-  kovitad-myshop
+  -p 443:443 \
+  -p 443:443/udp \
+  -v caddy_data:/data \
+  -v caddy_config:/config \
+  kovitad-shop
 ```
 
 ## Notes
 
-- This uses exactly one runtime container: nginx.
+- This uses exactly one runtime container: Caddy.
+- Caddy stores HTTPS certificates in the Docker volume `caddy_data`.
 - The large `uploads/` scratch folder is intentionally excluded from Git and Docker builds.
 - External prototype dependencies are loaded from CDN by the UI kit HTML.
