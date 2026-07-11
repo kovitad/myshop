@@ -1,0 +1,13 @@
+.git
+.gitignore
+.gitattributes
+.DS_Store
+uploads/
+node_modules/
+dist/
+build/
+.next/
+.cache/
+*.log
+.tmp/
+tmp/
