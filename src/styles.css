@@ -89,5 +89,22 @@ blockquote { margin: 32px 0; padding: 22px 24px; border-left: 3px solid var(--si
 .guide-card button:disabled { opacity: .55; cursor: default; }
 .legal { max-width: 760px; }
 .legal p { font-size: var(--text-lg); line-height: 1.85; color: var(--text-muted); margin-top: 20px; }
+.auth-page { max-width: 520px; }
+.auth-form { max-width: 420px; margin-top: 28px; }
+.auth-page .text-link { margin-top: 22px; }
+.membership { max-width: 760px; }
+.pricing-card { margin-top: 32px; padding: 32px; border: 1px solid var(--border-silver); border-radius: var(--radius-lg); background: var(--surface-raised); box-shadow: var(--shadow-silver); max-width: 460px; }
+.pricing-card .price { display: flex; align-items: baseline; gap: 6px; }
+.pricing-card .price strong { font-family: var(--font-display); font-weight: var(--weight-display); font-size: 52px; color: var(--green-800); line-height: 1; }
+.pricing-card .price span { color: var(--text-muted); }
+.pricing-card ul { list-style: none; margin: 22px 0 26px; padding: 0; display: grid; gap: 12px; }
+.pricing-card li { display: flex; align-items: center; gap: 10px; color: var(--text-body); line-height: 1.6; }
+.pricing-card li svg { color: var(--green-600); flex: none; }
+.pricing-card .button { width: 100%; }
+.account .badge { display: inline-block; border: 1px solid var(--border-silver); border-radius: var(--radius-pill); padding: 3px 12px; font-size: var(--text-sm); color: var(--text-muted); }
+.account .badge.member { background: var(--ivory-100); color: var(--green-700); border-color: var(--green-600); }
+.library-heading { margin-top: 48px; font-size: var(--text-3xl); }
+.account .guide-grid { margin-top: 20px; }
+.contact-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 html[lang="th"] h1, html[lang="th"] h2, html[lang="th"] h3 { line-height: 1.2; }
 html[lang="th"] body { line-height: 1.8; }

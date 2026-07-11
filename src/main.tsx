@@ -20,12 +20,25 @@ const ROUTES = [
   '/',
   '/library',
   '/articles/sleep-rhythm',
+  '/login',
+  '/membership',
+  '/account',
+  '/contact',
   '/order/success',
   '/order/cancelled',
   '/privacy',
   '/terms',
   '/refund',
 ];
+
+type User = { id: string; name: string; email: string; member: boolean } | null;
+
+// Support channels. Replace lineUrl with your LINE Official Account link
+// (LINE OA console → "Add friend" URL, e.g. https://line.me/R/ti/p/@yourid).
+const SUPPORT = {
+  email: 'hello@kovitad.shop',
+  lineUrl: 'https://line.me/R/ti/p/@kovitad',
+};
 
 const copy = {
   th: {
@@ -71,6 +84,29 @@ const copy = {
     privacyNav: 'ความเป็นส่วนตัว',
     termsNav: 'เงื่อนไขการใช้งาน',
     refundNav: 'นโยบายการคืนเงิน',
+    signIn: 'เข้าสู่ระบบ',
+    signOut: 'ออกจากระบบ',
+    accountNav: 'บัญชีของฉัน',
+    membershipNav: 'สมาชิก',
+    emailLabel: 'อีเมล',
+    passwordLabel: 'รหัสผ่าน',
+    loginTitle: 'เข้าสู่ระบบ',
+    loginBody: 'เข้าสู่ระบบเพื่อดูคู่มือและคอร์สที่คุณเป็นเจ้าของ',
+    loginError: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+    noAccount: 'ยังไม่มีบัญชี? สมัครได้ที่หน้าแรก',
+    membershipTitle: 'สมาชิกแบบเข้าถึงทั้งหมด',
+    membershipBody: 'เข้าถึงคอร์สและคลาสสดทั้งหมด รายเดือน ยกเลิกได้ทุกเมื่อ',
+    membershipCta: 'เป็นสมาชิก',
+    perMonth: '/เดือน',
+    memberActive: 'คุณเป็นสมาชิกอยู่แล้ว ขอบคุณที่ร่วมเดินทางกับเรา',
+    membershipPerks: ['เข้าถึงคอร์สทั้งหมด', 'เข้าร่วมคลาสสดและดูย้อนหลัง', 'เนื้อหาใหม่ต่อเนื่อง'],
+    accountTitle: 'บัญชีของฉัน',
+    yourLibrary: 'คลังของฉัน',
+    accountEmpty: 'คุณยังไม่มีคู่มือหรือคอร์สที่ซื้อไว้',
+    accountSignedOut: 'กรุณาเข้าสู่ระบบเพื่อดูบัญชีของคุณ',
+    memberBadge: 'สมาชิก',
+    notMember: 'ยังไม่ได้เป็นสมาชิก',
+    contactNav: 'ติดต่อเรา',
   },
   en: {
     nav: { home: 'Home', library: 'Library', article: 'Sample article' },
@@ -115,6 +151,29 @@ const copy = {
     privacyNav: 'Privacy',
     termsNav: 'Terms',
     refundNav: 'Refunds',
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    accountNav: 'My account',
+    membershipNav: 'Membership',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    loginTitle: 'Sign in',
+    loginBody: 'Sign in to see the guides and courses you own.',
+    loginError: 'Invalid email or password',
+    noAccount: "Don't have an account? Register on the home page.",
+    membershipTitle: 'All-access membership',
+    membershipBody: 'Unlock every course and live class, monthly. Cancel anytime.',
+    membershipCta: 'Become a member',
+    perMonth: '/month',
+    memberActive: 'You are already a member. Thank you for being here.',
+    membershipPerks: ['Every course, unlocked', 'Join live classes and watch the replays', 'New content, regularly'],
+    accountTitle: 'My account',
+    yourLibrary: 'Your library',
+    accountEmpty: "You don't own any guides or courses yet.",
+    accountSignedOut: 'Please sign in to see your account.',
+    memberBadge: 'Member',
+    notMember: 'Not a member',
+    contactNav: 'Contact',
   },
 };
 
@@ -205,7 +264,16 @@ function App() {
   const [route, setRoute] = React.useState<Route>(getRoute());
   const [lang, setLang] = React.useState<Lang>(() => (localStorage.getItem('kovitad-lang') as Lang) || 'th');
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const t = copy[lang];
+  const [user, setUser] = React.useState<User>(null);
+
+  const refreshUser = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/me');
+      setUser(res.ok ? await res.json() : null);
+    } catch {
+      setUser(null);
+    }
+  }, []);
 
   React.useEffect(() => {
     const onPop = () => setRoute(getRoute());
@@ -218,6 +286,8 @@ function App() {
     localStorage.setItem('kovitad-lang', lang);
   }, [lang]);
 
+  React.useEffect(() => { refreshUser(); }, [refreshUser]);
+
   const nav = (next: Route) => {
     history.pushState(null, '', next);
     setRoute(next);
@@ -227,11 +297,15 @@ function App() {
 
   return (
     <>
-      <Header route={route} lang={lang} setLang={setLang} nav={nav} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <Header route={route} lang={lang} setLang={setLang} nav={nav} menuOpen={menuOpen} setMenuOpen={setMenuOpen} user={user} />
       <main>
         {route === '/' && <Home lang={lang} nav={nav} />}
         {route === '/library' && <Library lang={lang} nav={nav} />}
         {route === '/articles/sleep-rhythm' && <Article lang={lang} nav={nav} />}
+        {route === '/login' && <Login lang={lang} nav={nav} onAuth={refreshUser} />}
+        {route === '/membership' && <Membership lang={lang} nav={nav} user={user} />}
+        {route === '/account' && <Account lang={lang} nav={nav} user={user} onAuth={refreshUser} />}
+        {route === '/contact' && <Contact lang={lang} />}
         {route === '/order/success' && <OrderSuccess lang={lang} nav={nav} />}
         {route === '/order/cancelled' && <OrderCancelled lang={lang} nav={nav} />}
         {(route === '/privacy' || route === '/terms' || route === '/refund') && (
@@ -247,11 +321,16 @@ function Wordmark() {
   return <span className="wordmark">KOVITAD<span>.shop</span></span>;
 }
 
-function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen }: {
-  route: Route; lang: Lang; setLang: (l: Lang) => void; nav: (r: Route) => void; menuOpen: boolean; setMenuOpen: (v: boolean) => void;
+function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
+  route: Route; lang: Lang; setLang: (l: Lang) => void; nav: (r: Route) => void; menuOpen: boolean; setMenuOpen: (v: boolean) => void; user: User;
 }) {
   const t = copy[lang];
-  const links: Array<[Route, string]> = [['/', t.nav.home], ['/library', t.nav.library], ['/articles/sleep-rhythm', t.nav.article]];
+  const links: Array<[Route, string]> = [
+    ['/', t.nav.home],
+    ['/library', t.nav.library],
+    ['/membership', t.membershipNav],
+    ['/articles/sleep-rhythm', t.nav.article],
+  ];
   return (
     <header className="site-header">
       <button className="brand-button" onClick={() => nav('/')} aria-label="KOVITAD.shop home"><Wordmark /></button>
@@ -261,6 +340,7 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen }: {
         ))}
       </nav>
       <div className="header-actions">
+        <button className="lang-toggle" onClick={() => nav(user ? '/account' : '/login')}>{user ? t.accountNav : t.signIn}</button>
         <button className="lang-toggle" onClick={() => setLang(lang === 'th' ? 'en' : 'th')}>{lang === 'th' ? 'EN' : 'ไทย'}</button>
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">{menuOpen ? <X /> : <Menu />}</button>
       </div>
@@ -484,6 +564,170 @@ function OrderCancelled({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) 
   );
 }
 
+function Login({ lang, nav, onAuth }: { lang: Lang; nav: (r: Route) => void; onAuth: () => Promise<void> | void }) {
+  const t = copy[lang];
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [note, setNote] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNote('');
+    setBusy(true);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { await onAuth(); nav('/account'); return; }
+      setNote(data.error || t.loginError);
+    } catch {
+      setNote(t.loginError);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="page container auth-page">
+      <p className="k-eyebrow">{t.loginTitle}</p>
+      <h1>{t.loginTitle}</h1>
+      <p className="lede">{t.loginBody}</p>
+      <form className="register-form auth-form" onSubmit={submit}>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.emailLabel} aria-label={t.emailLabel} autoComplete="email" />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.passwordLabel} aria-label={t.passwordLabel} autoComplete="current-password" />
+        <button className="button primary" type="submit" disabled={busy}>{t.signIn}</button>
+        <span className="inline-note">{note}</span>
+      </form>
+      <button className="text-link" onClick={() => nav('/')}>{t.noAccount}</button>
+    </section>
+  );
+}
+
+function Membership({ lang, nav, user }: { lang: Lang; nav: (r: Route) => void; user: User }) {
+  const t = copy[lang];
+  const [price, setPrice] = React.useState('฿199');
+  const [note, setNote] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  React.useEffect(() => {
+    fetch('/api/products')
+      .then((r) => r.json())
+      .then((list) => {
+        const m = Array.isArray(list) ? list.find((x: { id: string }) => x.id === 'membership') : null;
+        if (m?.price) setPrice(m.price);
+      })
+      .catch(() => {});
+  }, []);
+  const join = async () => {
+    setNote('');
+    setBusy(true);
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (res.status === 503) { setNote(t.paymentsSoon); return; }
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) { window.location.href = data.url; return; }
+      setNote(data.error || t.checkoutError);
+    } catch {
+      setNote(t.checkoutError);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="page container membership">
+      <p className="k-eyebrow">{t.membershipNav}</p>
+      <h1>{t.membershipTitle}</h1>
+      <p className="lede">{t.membershipBody}</p>
+      <div className="pricing-card">
+        <div className="price"><strong>{price}</strong><span>{t.perMonth}</span></div>
+        <ul>{t.membershipPerks.map((perk, i) => <li key={i}><Check size={16} />{perk}</li>)}</ul>
+        {user?.member
+          ? <p className="inline-note">{t.memberActive}</p>
+          : <button className="button primary k-shine" onClick={join} disabled={busy}>{t.membershipCta}</button>}
+        {note && <p className="inline-note">{note}</p>}
+      </div>
+      <aside className="disclaimer"><Check size={18} /><p>{t.disclaimer}</p></aside>
+    </section>
+  );
+}
+
+function Account({ lang, nav, user, onAuth }: { lang: Lang; nav: (r: Route) => void; user: User; onAuth: () => Promise<void> | void }) {
+  const t = copy[lang];
+  type Owned = { id: string; product: { id: string; type?: string; title?: { th: string; en: string } }; downloadUrl: string | null };
+  const [items, setItems] = React.useState<Owned[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+  React.useEffect(() => {
+    if (!user) { setLoaded(true); return; }
+    fetch('/api/account/orders')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => { setItems(Array.isArray(d) ? d : []); setLoaded(true); })
+      .catch(() => setLoaded(true));
+  }, [user]);
+  const logout = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    await onAuth();
+    nav('/');
+  };
+  if (!user) {
+    return (
+      <section className="page container">
+        <p className="k-eyebrow">{t.accountTitle}</p>
+        <h1>{t.accountTitle}</h1>
+        <p className="lede">{t.accountSignedOut}</p>
+        <button className="button primary" onClick={() => nav('/login')}>{t.signIn}</button>
+      </section>
+    );
+  }
+  return (
+    <section className="page container account">
+      <p className="k-eyebrow">{t.accountTitle}</p>
+      <h1>{user.name}</h1>
+      <p className="lede">{user.email} · <span className={user.member ? 'badge member' : 'badge'}>{user.member ? t.memberBadge : t.notMember}</span></p>
+      <div className="order-actions">
+        {!user.member && <button className="button secondary" onClick={() => nav('/membership')}>{t.membershipCta}</button>}
+        <button className="text-link" onClick={logout}>{t.signOut}</button>
+      </div>
+      <h2 className="library-heading">{t.yourLibrary}</h2>
+      {loaded && items.length === 0 && <p className="inline-note">{t.accountEmpty}</p>}
+      <div className="guide-grid">
+        {items.map((it) => (
+          <article className="guide-card" key={it.id}>
+            <p className="k-eyebrow">{it.product?.type || 'guide'}</p>
+            <h3>{it.product?.title ? (lang === 'th' ? it.product.title.th : it.product.title.en) : it.product.id}</h3>
+            <div>
+              {it.downloadUrl
+                ? <a className="text-link" href={it.downloadUrl}>{t.successDownload}<ArrowRight size={15} /></a>
+                : <span />}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Contact({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  return (
+    <section className="page container legal">
+      <p className="k-eyebrow">{t.contactNav}</p>
+      <h1>{t.contactNav}</h1>
+      <p>{lang === 'th'
+        ? 'มีคำถามเกี่ยวกับคู่มือ คอร์ส หรือการชำระเงิน? ทักหาเราได้เลย เรามักตอบกลับภายในหนึ่งวันทำการ'
+        : 'Questions about a guide, a course, or your order? Reach us here — we usually reply within one business day.'}</p>
+      <div className="contact-actions">
+        <a className="button primary" href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer">{lang === 'th' ? 'แชทผ่าน LINE' : 'Chat on LINE'}</a>
+        <a className="button secondary" href={`mailto:${SUPPORT.email}`}>{SUPPORT.email}</a>
+      </div>
+    </section>
+  );
+}
+
 type LegalKind = 'privacy' | 'terms' | 'refund';
 
 function LegalPage({ kind, lang }: { kind: LegalKind; lang: Lang }) {
@@ -499,7 +743,7 @@ function LegalPage({ kind, lang }: { kind: LegalKind; lang: Lang }) {
 
 function Footer({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const t = copy[lang];
-  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/articles/sleep-rhythm')}>{t.nav.article}</button><button onClick={() => nav('/privacy')}>{t.privacyNav}</button><button onClick={() => nav('/terms')}>{t.termsNav}</button><button onClick={() => nav('/refund')}>{t.refundNav}</button></nav></footer>;
+  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/membership')}>{t.membershipNav}</button><button onClick={() => nav('/contact')}>{t.contactNav}</button><button onClick={() => nav('/privacy')}>{t.privacyNav}</button><button onClick={() => nav('/terms')}>{t.termsNav}</button><button onClick={() => nav('/refund')}>{t.refundNav}</button></nav></footer>;
 }
 
 createRoot(document.getElementById('root')!).render(<App />);
