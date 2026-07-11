@@ -1,0 +1,17 @@
+# Treat design assets as binary to keep diffs readable
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.bmp binary
+
+# Normalize text files
+*.css text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.json text eol=lf

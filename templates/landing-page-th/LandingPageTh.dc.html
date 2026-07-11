@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Landing page (ไทย)" description="หน้าแรกภาษาไทย — full-bleed hero, topic tiles, ebook shelf, newsletter, footer" -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <script src="../../assets/image-slot.js"></script>
+</helmet>
+
+<div style="min-height: 100vh; background: var(--surface-page); font-family: var(--font-sans); color: var(--text-body);">
+
+  <!-- Header (overlay over the full-bleed hero) -->
+  <header style="position: absolute; top: 0; left: 0; right: 0; z-index: 50; background: linear-gradient(180deg, rgba(14,33,27,0.45) 0%, rgba(14,33,27,0) 100%);">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 0 24px; height: 84px; display: flex; align-items: center; gap: 28px;">
+      <span style="display: inline-flex; align-items: baseline; gap: 3px;">
+        <span style="font: 400 26px/1 var(--font-wordmark); letter-spacing: 0.04em; color: var(--text-on-dark);">KOVITAD</span>
+        <span style="font: 500 13px/1 var(--font-sans); color: var(--silver-300);">.shop</span>
+      </span>
+      <nav style="display: flex; gap: 22px; margin-left: 12px; font: 500 14px/1 var(--font-sans);">
+        <a href="#" style="color: #FFFFFF; text-decoration: none; white-space: nowrap; font-weight: 600;">หน้าแรก</a>
+        <a href="#" style="color: rgba(243,239,228,0.82); text-decoration: none; white-space: nowrap;">คลังความรู้</a>
+        <a href="#" style="color: rgba(243,239,228,0.82); text-decoration: none; white-space: nowrap;">บทความ</a>
+        <a href="#" style="color: rgba(243,239,228,0.82); text-decoration: none; white-space: nowrap;">เกี่ยวกับเรา</a>
+      </nav>
+      <a href="#" class="k-shine" style="margin-left: auto; display: inline-flex; align-items: center; height: 40px; padding: 0 22px; border-radius: 999px; background: var(--grad-chrome); border: 1px solid var(--silver-400); color: var(--charcoal-800); font: 600 14px/1 var(--font-sans); text-decoration: none; white-space: nowrap;">เข้าสู่ระบบ</a>
+    </div>
+  </header>
+
+  <!-- Immersive full-bleed hero -->
+  <section style="position: relative; min-height: 86vh; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; background: var(--grad-green-depth);">
+    <div style="position: absolute; left: 0; right: 0; top: -60%; height: 160%;">
+      <image-slot id="landing-hero-th" shape="rect" placeholder="วางรูปหลักของคุณที่นี่ — เวลเนสไทย แสงธรรมชาติ"></image-slot>
+    </div>
+    <div style="position: absolute; inset: 0; background: var(--grad-scrim-hero); pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 26px; padding: 200px 24px 88px; max-width: 960px; pointer-events: none;">
+      <span style="color: var(--silver-200); font: 600 15px/1 var(--font-sans); letter-spacing: 0.04em; text-shadow: 0 1px 12px rgba(14,33,27,0.5);">อายุยืนแบบทำได้จริง</span>
+      <h1 style="font: 600 clamp(44px, 7vw, 76px)/1.22 var(--font-display); color: #FFFFFF; margin: 0; text-wrap: balance; text-shadow: 0 2px 28px rgba(14,33,27,0.55);">นิสัยเล็ก ๆ<br>สุขภาพที่<span class="k-silver-text">ยืนยาว</span></h1>
+      <p style="font: 400 22px/1.7 var(--font-sans); color: rgba(243,239,228,0.92); max-width: 620px; margin: 0; text-shadow: 0 1px 16px rgba(14,33,27,0.5);">คู่มือ บทความ และเครื่องมือที่อ้างอิงงานวิจัย เรื่องการกิน การเคลื่อนไหว การนอน และความคิด</p>
+      <div style="display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; justify-content: center; pointer-events: auto;">
+        <a href="#" class="k-shine" style="display: inline-flex; align-items: center; height: 52px; padding: 0 34px; border-radius: 999px; background: var(--grad-chrome); border: 1px solid var(--silver-400); color: var(--charcoal-800); font: 600 16px/1 var(--font-sans); text-decoration: none; white-space: nowrap;">ดูคลังความรู้</a>
+        <a href="#" style="display: inline-flex; align-items: center; height: 52px; padding: 0 34px; border-radius: 999px; background: rgba(14,33,27,0.35); backdrop-filter: blur(4px); border: 1px solid var(--border-hairline-dark); color: var(--text-on-dark); font: 600 16px/1 var(--font-sans); text-decoration: none; white-space: nowrap;">เริ่มจากบทความ</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Topics -->
+  <section style="max-width: 1180px; margin: 0 auto; padding: 88px 24px;">
+    <p style="margin: 0 0 8px; font: 600 12px/1 var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--green-600);">เริ่มต้นที่นี่</p>
+    <h2 style="font: 600 46px/1.35 var(--font-display); color: var(--text-heading); margin: 0 0 36px;">สี่เรื่องสำคัญที่ควรทำให้ดี</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+      <sc-for list="{{ topics }}" as="t" hint-placeholder-count="4">
+        <div style="background: var(--surface-raised); border: 1px solid var(--border-hairline); border-radius: 18px; box-shadow: var(--shadow-sm); padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+          <x-import component-from-global-scope="KOVITADWellnessDesignSystem_61cabf.IconTile" name="{{ t.icon }}" tone="chrome" hint-size="44px,44px"></x-import>
+          <span style="font: 600 22px/1.45 var(--font-display); color: var(--text-heading);">{{ t.title }}</span>
+          <span style="font: 400 14px/1.7 var(--font-sans); color: var(--text-muted);">{{ t.desc }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <hr class="k-divider" style="max-width: 1132px; margin: 0 auto;">
+
+  <!-- Ebook shelf -->
+  <section style="max-width: 1180px; margin: 0 auto; padding: 56px 24px 88px;">
+    <p style="margin: 0 0 8px; font: 600 12px/1 var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--green-600);">อีบุ๊กและคู่มือ</p>
+    <h2 style="font: 600 46px/1.35 var(--font-display); color: var(--text-heading); margin: 0 0 36px;">เจาะลึกแบบใช้ได้จริง</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
+      <sc-for list="{{ ebooks }}" as="b" hint-placeholder-count="3">
+        <x-import component-from-global-scope="KOVITADWellnessDesignSystem_61cabf.ProductCard" kind="อีบุ๊ก" title="{{ b.title }}" description="{{ b.desc }}" price="{{ b.price }}" icon="{{ b.icon }}" cta="ดูรายละเอียด" hint-size="100%,420px"></x-import>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section style="background: var(--grad-green-depth); padding: 72px 24px;">
+    <div style="max-width: 620px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; gap: 16px; align-items: center;">
+      <p style="color: var(--silver-300); margin: 0; font: 600 12px/1 var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase;">จดหมายรายสัปดาห์</p>
+      <h2 style="font: 600 36px/1.4 var(--font-display); color: var(--text-on-dark); margin: 0;">หนึ่งไอเดียดี ๆ ทุกวันอาทิตย์</h2>
+      <p style="font: 400 16px/1.8 var(--font-sans); color: var(--text-on-dark-muted); margin: 0; max-width: 480px;">สิ่งที่กำลังอ่าน ทดลอง และเรียนรู้ใหม่ เกี่ยวกับการมีชีวิตที่ดีไปอีกนาน — ฟรี สั้น อ่านง่าย</p>
+      <div style="display: flex; gap: 10px; width: 100%; max-width: 440px; margin-top: 6px;">
+        <input type="email" placeholder="you@example.com" style="flex: 1; height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--border-silver); background: var(--surface-raised); font: 400 16px/1 var(--font-sans); color: var(--text-body); outline: none; box-sizing: border-box;">
+        <a href="#" class="k-shine" style="display: inline-flex; align-items: center; height: 44px; padding: 0 22px; border-radius: 999px; background: var(--grad-chrome); border: 1px solid var(--silver-400); color: var(--charcoal-800); font: 600 15px/1 var(--font-sans); text-decoration: none; white-space: nowrap;">สมัครรับ</a>
+      </div>
+      <p style="color: var(--text-on-dark-muted); font: 400 12px/1.6 var(--font-sans); margin: 0; opacity: 0.75;">ไม่มีสแปม ยกเลิกได้ทุกเมื่อ</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background: var(--surface-ink); padding: 64px 24px 40px;">
+    <div style="max-width: 1180px; margin: 0 auto;">
+      <div style="display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap;">
+        <span style="display: inline-flex; align-items: baseline; gap: 3px;">
+          <span style="font: 400 24px/1 var(--font-wordmark); letter-spacing: 0.04em; color: var(--text-on-dark);">KOVITAD</span>
+          <span style="font: 500 12px/1 var(--font-sans); color: var(--silver-300);">.shop</span>
+        </span>
+        <nav style="display: flex; gap: 24px; font: 400 14px/1 var(--font-sans);">
+          <a href="#" style="color: var(--text-on-dark-muted); text-decoration: none; white-space: nowrap;">บทความ</a>
+          <a href="#" style="color: var(--text-on-dark-muted); text-decoration: none; white-space: nowrap;">อีบุ๊ก</a>
+          <a href="#" style="color: var(--text-on-dark-muted); text-decoration: none; white-space: nowrap;">เกี่ยวกับเรา</a>
+          <a href="#" style="color: var(--text-on-dark-muted); text-decoration: none; white-space: nowrap;">ความเป็นส่วนตัว</a>
+        </nav>
+      </div>
+      <hr class="k-divider" style="margin: 40px 0 20px;">
+      <p style="color: var(--text-on-dark-muted); font: 400 12px/1.8 var(--font-sans); max-width: 660px; margin: 0;">KOVITAD แบ่งปันความรู้ทั่วไปและประสบการณ์ส่วนตัว ไม่ใช่คำแนะนำทางการแพทย์ โปรดปรึกษาแพทย์ก่อนปรับเปลี่ยนการดูแลสุขภาพของคุณ © 2026 KOVITAD.shop</p>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      topics: [
+        { icon: "salad", title: "โภชนาการ", desc: "การกินในทุกวัน เพื่อสุขภาพระยะยาว — ไม่มีสูตรลัด ไม่ต้องกลัว" },
+        { icon: "footprints", title: "การเคลื่อนไหว", desc: "ความแข็งแรงและการก้าวเดิน ที่พอดีกับชีวิตประจำสัปดาห์" },
+        { icon: "moon", title: "การนอน", desc: "นิสัยเงียบ ๆ ที่งานวิจัยชี้ตรงกันเสมอ" },
+        { icon: "brain", title: "มายด์เซ็ต", desc: "สมาธิ ความเครียด และเป้าหมาย — ฝึกได้เหมือนกล้ามเนื้อ" },
+      ],
+      ebooks: [
+        { icon: "salad", title: "กินดีเพื่อทศวรรษข้างหน้า", desc: "คู่มือโภชนาการประจำวัน อ้างอิงงานวิจัย ใช้ได้จริง", price: "฿390" },
+        { icon: "moon", title: "คู่มือการนอนแบบไม่เร่งรีบ", desc: "24 หน้า เรื่องค่ำคืนที่ดีขึ้น — ไม่ต้องซื้ออะไรเพิ่ม", price: "฿290" },
+        { icon: "footprints", title: "แข็งแรงหลังหกสิบ", desc: "เส้นทางฝึกความแข็งแรงอย่างค่อยเป็นค่อยไป", price: "฿390" },
+      ],
+    };
+  }
+  componentDidMount() {
+    if (!window.lucide && !document.getElementById("lucide-cdn")) {
+      const s = document.createElement("script");
+      s.id = "lucide-cdn";
+      s.src = "https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js";
+      s.onload = () => this.forceUpdate();
+      document.head.appendChild(s);
+    }
+  }
+}
+</script>
+</body>
+</html>

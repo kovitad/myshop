@@ -1,0 +1,12 @@
+/* KOVITAD webfonts.
+   No font binaries were provided — Google Fonts CDN is used as the source.
+   Substitutions (flagged in readme.md):
+   - Display serif  → "Cormorant Garamond" (elegant, high-contrast editorial serif)
+   - Wordmark serif → "Marcellus" (wide-cap roman, closest to the logo lockup type)
+   - Body/UI sans   → "Figtree" (clean, approachable, highly readable)
+   Thai script support (primary audience is Thai/Asian):
+   - "Trirong"  → Thai-capable serif, pairs with Cormorant for display
+   - "Anuphan" → Thai-capable loopless sans, pairs with Figtree for body/UI
+   Replace with licensed brand fonts by swapping these imports for @font-face rules. */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Marcellus&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Trirong:wght@400;500;600;700&family=Anuphan:wght@400;500;600;700&display=swap");

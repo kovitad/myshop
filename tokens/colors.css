@@ -1,0 +1,79 @@
+/* ── KOVITAD color system ─────────────────────────────────────────────
+   Deep forest green + warm ivory + charcoal, with metallic silver as the
+   refined accent (replaces most former muted-gold accents). */
+:root {
+  /* Forest green (primary brand hue) */
+  --green-950: #0B211B;
+  --green-900: #0F2E26;
+  --green-800: #12352C;
+  --green-700: #173F35; /* brand: deep forest green */
+  --green-600: #1E5044;
+  --green-500: #2A6355;
+  --green-400: #3F7A69;
+  --green-300: #7FA396;
+  --green-200: #B9CDC5;
+  --green-100: #DCE6E0;
+  --green-50:  #EDF2EF;
+
+  /* Warm ivory (paper) */
+  --ivory-50:  #FDFBF6;
+  --ivory-100: #FAF6EC;
+  --ivory-200: #F7F2E8; /* brand: warm ivory */
+  --ivory-300: #EFE8D9;
+  --ivory-400: #E4DAC6;
+
+  /* Charcoal (ink) */
+  --charcoal-900: #161E1A;
+  --charcoal-800: #1E2824; /* brand: charcoal */
+  --charcoal-700: #2A332E;
+  --charcoal-600: #3A4540;
+  --charcoal-500: #556059;
+
+  /* Metallic silver (accent family) */
+  --silver-50:  #F6F8F9;
+  --silver-100: #EEF1F3; /* brand: bright silver highlight */
+  --silver-200: #DDE2E6;
+  --silver-300: #C8CDD2; /* brand: metallic silver */
+  --silver-400: #AEB6BD;
+  --silver-500: #959EA6;
+  --silver-600: #828B93;
+  --silver-700: #737B82; /* brand: dark chrome */
+  --silver-800: #5A6167;
+
+  /* Status (muted, natural — never alarming) */
+  --success-600: #2F7A4D;
+  --success-100: #E2F0E6;
+  --warning-600: #A9762F;
+  --warning-100: #F6ECD9;
+  --danger-600:  #A94E44;
+  --danger-100:  #F5E3E0;
+
+  /* ── Semantic aliases ── */
+  --surface-page:   var(--ivory-200);
+  --surface-raised: #FEFCF7;   /* warm white for cards on ivory */
+  --surface-sunken: var(--ivory-300);
+  --surface-dark:   var(--green-700);
+  --surface-ink:    var(--charcoal-800);
+
+  --text-heading:      var(--green-800);
+  --text-body:         var(--charcoal-700);
+  --text-muted:        #5F6B64;
+  --text-faint:        #8A948D;
+  --text-on-dark:      #F3EFE4;
+  --text-on-dark-muted: #B9C4BE;
+  --text-silver:       var(--silver-700);
+
+  --accent:        var(--silver-300);
+  --accent-bright: var(--silver-100);
+  --accent-deep:   var(--silver-700);
+
+  --link:       var(--green-600);
+  --link-hover: var(--green-500);
+
+  --border-hairline:      rgba(30, 40, 36, 0.10);
+  --border-hairline-dark: rgba(247, 242, 232, 0.16);
+  --border-silver:        var(--silver-300);
+  --border-silver-strong: var(--silver-500);
+
+  --focus-ring-color: var(--green-500);
+}

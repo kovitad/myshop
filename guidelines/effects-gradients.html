@@ -1,0 +1,20 @@
+<!-- @dsCard group="Silver Effects" viewport="700x180" name="Metallic gradients" subtitle="--grad-chrome, chrome-soft, silver-text, green-depth" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body { padding: 18px 24px; box-sizing: border-box; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.g { border-radius: var(--radius-md); height: 96px; border: 1px solid var(--border-hairline); position: relative; }
+.g code { position: absolute; left: 10px; bottom: 8px; font: 500 9.5px/1 ui-monospace, monospace; }
+.stack { display: flex; flex-direction: column; }
+</style></head>
+<body>
+<div class="g" style="background: var(--grad-chrome)"><code style="color: var(--charcoal-700)">--grad-chrome</code></div>
+<div class="g" style="background: var(--grad-chrome-soft)"><code style="color: var(--charcoal-700)">--grad-chrome-soft</code></div>
+<div class="g stack" style="background: var(--surface-ink); align-items: center; justify-content: center;">
+  <span class="k-silver-text" style="font: 600 30px/1 var(--font-display);">Silver text</span>
+  <code style="color: var(--silver-500)">.k-silver-text</code>
+</div>
+<div class="g" style="background: var(--grad-green-depth)"><code style="color: var(--text-on-dark-muted)">--grad-green-depth</code></div>
+</body>
+</html>

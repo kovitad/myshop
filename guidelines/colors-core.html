@@ -1,0 +1,23 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Core palette" subtitle="The six brand colors" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body { padding: 16px; box-sizing: border-box; }
+.row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.sw { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-hairline); }
+.sw .chip { height: 92px; }
+.sw .meta { padding: 8px 10px; background: var(--surface-raised); font: 500 11px/1.5 var(--font-sans); color: var(--text-body); }
+.sw .meta code { display: block; font: 400 10px/1.4 ui-monospace, monospace; color: var(--text-faint); }
+</style></head>
+<body>
+<div class="row">
+  <div class="sw"><div class="chip" style="background: var(--green-700)"></div><div class="meta">Deep forest<code>#173F35 · --green-700</code></div></div>
+  <div class="sw"><div class="chip" style="background: var(--ivory-200)"></div><div class="meta">Warm ivory<code>#F7F2E8 · --ivory-200</code></div></div>
+  <div class="sw"><div class="chip" style="background: var(--charcoal-800)"></div><div class="meta">Charcoal<code>#1E2824 · --charcoal-800</code></div></div>
+  <div class="sw"><div class="chip" style="background: var(--silver-300)"></div><div class="meta">Metallic silver<code>#C8CDD2 · --silver-300</code></div></div>
+  <div class="sw"><div class="chip" style="background: var(--silver-100)"></div><div class="meta">Bright silver<code>#EEF1F3 · --silver-100</code></div></div>
+  <div class="sw"><div class="chip" style="background: var(--silver-700)"></div><div class="meta">Dark chrome<code>#737B82 · --silver-700</code></div></div>
+</div>
+</body>
+</html>

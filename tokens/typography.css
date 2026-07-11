@@ -1,0 +1,31 @@
+/* ── KOVITAD typography ───────────────────────────────────────────────
+   Elegant serif for major headlines; clean sans for body + interface.
+   Wordmark uses Marcellus (closest to the logo lockup). */
+:root {
+  /* Thai-capable fallbacks (Trirong serif / Anuphan sans) keep mixed Thai-Latin copy harmonious */
+  --font-display:  "Cormorant Garamond", "Trirong", "Times New Roman", Georgia, serif;
+  --font-wordmark: "Marcellus", "Cormorant Garamond", "Trirong", Georgia, serif;
+  --font-sans:     "Figtree", "Anuphan", -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+
+  /* Scale (mobile-first; step up display sizes at ≥768px) */
+  --text-xs:  12px;
+  --text-sm:  14px;
+  --text-md:  16px;
+  --text-lg:  18px;
+  --text-xl:  22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 46px;
+  --text-5xl: 64px;
+  --text-6xl: 88px;  /* immersive full-bleed heroes */
+
+  --leading-tight: 1.08;
+  --leading-snug:  1.25;
+  --leading-body:  1.65;
+
+  --tracking-tight: -0.01em;
+  --tracking-caps:  0.16em;
+  --tracking-wordmark: 0.04em;
+
+  --weight-display: 600; /* Cormorant needs ≥500 to hold its color */
+}

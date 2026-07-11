@@ -1,0 +1,18 @@
+<!-- @dsCard group="Silver Effects" viewport="700x170" name="Dividers & hairlines" subtitle="Chrome fade rules between sections" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body { padding: 24px 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
+.lbl { display: flex; align-items: center; gap: 16px; }
+.lbl .line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--silver-300) 25%, var(--silver-100) 50%, var(--silver-300) 75%, transparent 100%); }
+.lbl span { font: 600 var(--text-xs)/1 var(--font-sans); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--silver-700); }
+.plain { height: 1px; background: var(--border-hairline); }
+</style></head>
+<body>
+<hr class="k-divider">
+<div class="lbl"><div class="line"></div><span>From the library</span><div class="line"></div></div>
+<div class="plain"></div>
+<p style="font: 400 11px/1.4 var(--font-sans); color: var(--text-muted); margin-top: -12px;">chrome fade (sections) · labelled divider · plain hairline (inside cards)</p>
+</body>
+</html>

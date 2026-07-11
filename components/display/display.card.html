@@ -1,0 +1,49 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Display" subtitle="Cards, premium product card, badges, tags, divider" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body { padding: 20px; box-sizing: border-box; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Card, ProductCard, Badge, Tag, Divider, Icon } = window.KOVITADWellnessDesignSystem_61cabf;
+function Demo() {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 24, alignItems: "start" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Badge>New guide</Badge>
+          <Badge tone="silver" icon={<Icon name="sparkles" size={11} />}>Premium</Badge>
+          <Badge tone="ivory">12 min read</Badge>
+          <Badge tone="success">In stock</Badge>
+          <Badge tone="warning">Last copies</Badge>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Tag selected>Sleep</Tag>
+          <Tag onClick={() => {}}>Nutrition</Tag>
+          <Tag onClick={() => {}}>Movement</Tag>
+          <Tag onRemove={() => {}}>Mindset</Tag>
+        </div>
+        <Divider label="From the library" />
+        <Card interactive>
+          <span className="k-eyebrow">Article · Sleep</span>
+          <h3 style={{ fontSize: "var(--text-xl)", margin: "8px 0 6px" }}>Seven quiet habits of good sleepers</h3>
+          <p style={{ font: "400 var(--text-sm)/1.55 var(--font-sans)", color: "var(--text-muted)" }}>None of them involve buying anything. A look at the evening routines research keeps pointing back to.</p>
+        </Card>
+      </div>
+      <ProductCard kind="Ebook" title="Eat for the decades ahead" description="Practical, evidence-informed everyday nutrition." price="฿390" oldPrice="฿590" icon="salad" />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

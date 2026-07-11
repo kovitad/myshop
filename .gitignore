@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Design-tool scratch/uploads (not referenced by the design system)
+uploads/
+
+# Logs / temp
+*.log
+.tmp/
+tmp/
+
+# Dependency/build folders if this repo later gains tooling
+node_modules/
+dist/
+build/
+.next/
+.cache/

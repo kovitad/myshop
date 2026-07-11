@@ -1,0 +1,35 @@
+/* ── KOVITAD spacing, layout, radii ──────────────────────────────────
+   4px base. Generous whitespace is a brand feature — default to the
+   larger step when unsure. */
+:root {
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Layout */
+  --container-max:    1180px;
+  --container-narrow: 720px;  /* article / reading measure */
+  --container-pad:    24px;
+  --section-gap:      96px;   /* between page sections (64px on mobile) */
+
+  /* Corner radii — restrained; pill reserved for CTAs and tags */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   18px;
+  --radius-xl:   28px;
+  --radius-pill: 999px;
+
+  /* Hit targets */
+  --hit-target: 44px;
+}

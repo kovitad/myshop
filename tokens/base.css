@@ -1,0 +1,33 @@
+/* ── KOVITAD base document styles ─────────────────────────────────── */
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font: 400 var(--text-md)/var(--leading-body) var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-tight);
+  color: var(--text-heading);
+  margin: 0;
+  text-wrap: balance;
+}
+h4, h5, h6 { font-family: var(--font-sans); color: var(--text-heading); margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+
+a { color: var(--link); text-decoration-color: var(--silver-400); text-underline-offset: 3px; transition: color var(--dur-fast) var(--ease-out); }
+a:hover { color: var(--link-hover); text-decoration-color: var(--silver-600); }
+
+::selection { background: var(--green-100); color: var(--green-900); }
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+img { max-width: 100%; display: block; }

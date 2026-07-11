@@ -1,0 +1,74 @@
+/* ── KOVITAD effects: silver bling, shadows, motion ───────────────────
+   Silver is luminous and restrained: hairline chrome borders, soft
+   gradients, and a single slow shine sweep on hover. Never glittery. */
+:root {
+  /* Metallic gradients */
+  --grad-chrome: linear-gradient(135deg, #EEF1F3 0%, #C8CDD2 28%, #98A1A9 50%, #D4D9DD 72%, #EEF1F3 100%); /* @kind color */
+  --grad-chrome-soft: linear-gradient(180deg, #F6F8F9 0%, #E3E7EA 100%); /* @kind color */
+  --grad-silver-text: linear-gradient(100deg, #8F979E 0%, #E9EDF0 30%, #AEB6BD 55%, #F2F5F7 80%, #9AA3AB 100%); /* @kind color */
+  --grad-green-depth: linear-gradient(180deg, #1B4A3E 0%, #12352C 100%); /* @kind color */
+  --grad-ivory-fade: linear-gradient(180deg, rgba(247,242,232,0) 0%, #F7F2E8 100%); /* @kind color */
+  /* Scrim for text over full-bleed photography (immersive heroes) */
+  --grad-scrim-hero: linear-gradient(180deg, rgba(14,33,27,0.45) 0%, rgba(14,33,27,0.30) 45%, rgba(14,33,27,0.62) 100%); /* @kind color */
+  /* Shine sweep overlay (use on a masked ::after) */
+  --grad-shine: linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 62%); /* @kind color */
+  --grad-shine-dark: linear-gradient(105deg, rgba(238,241,243,0) 38%, rgba(238,241,243,0.28) 50%, rgba(238,241,243,0) 62%); /* @kind color */
+
+  /* Shadows — soft, green-tinted, low contrast */
+  --shadow-xs: 0 1px 2px rgba(23, 63, 53, 0.06);
+  --shadow-sm: 0 1px 2px rgba(23, 63, 53, 0.05), 0 3px 10px rgba(23, 63, 53, 0.06);
+  --shadow-md: 0 2px 6px rgba(23, 63, 53, 0.05), 0 12px 32px rgba(23, 63, 53, 0.10);
+  --shadow-lg: 0 4px 12px rgba(23, 63, 53, 0.06), 0 24px 56px rgba(23, 63, 53, 0.14);
+  /* Silver-rimmed card shadow (premium product / ebook cards) */
+  --shadow-silver: 0 0 0 1px var(--silver-200), 0 1px 2px rgba(115, 123, 130, 0.14), 0 12px 32px rgba(115, 123, 130, 0.16);
+  --inset-sheen: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  /* Motion — calm and unhurried */
+  --ease-out:   cubic-bezier(0.22, 0.61, 0.25, 1); /* @kind other */
+  --ease-inout: cubic-bezier(0.45, 0, 0.2, 1); /* @kind other */
+  --dur-fast:  150ms; /* @kind other */
+  --dur-med:   280ms; /* @kind other */
+  --dur-slow:  650ms; /* @kind other */
+  --dur-shine: 900ms; /* @kind other */
+}
+
+/* Shine sweep: add .k-shine to buttons/cards/headings; sweeps once on hover */
+@keyframes k-shine-sweep {
+  from { transform: translateX(-160%) skewX(-18deg); }
+  to   { transform: translateX(260%)  skewX(-18deg); }
+}
+.k-shine { position: relative; overflow: hidden; }
+.k-shine::after {
+  content: "";
+  position: absolute; inset: 0;
+  width: 60%;
+  background: var(--grad-shine);
+  transform: translateX(-160%) skewX(-18deg);
+  pointer-events: none;
+}
+.k-shine:hover::after { animation: k-shine-sweep var(--dur-shine) var(--ease-inout); }
+@media (prefers-reduced-motion: reduce) {
+  .k-shine:hover::after { animation: none; }
+}
+
+/* Silver gradient text (sparingly: one word or numeral, not sentences) */
+.k-silver-text {
+  background: var(--grad-silver-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Section divider: hairline chrome fade */
+.k-divider {
+  border: 0; height: 1px; width: 100%;
+  background: linear-gradient(90deg, transparent 0%, var(--silver-300) 18%, var(--silver-100) 50%, var(--silver-300) 82%, transparent 100%);
+}
+
+/* Eyebrow label above headlines */
+.k-eyebrow {
+  font: 600 var(--text-xs)/1 var(--font-sans);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--green-600);
+}

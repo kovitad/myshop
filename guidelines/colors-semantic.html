@@ -1,0 +1,37 @@
+<!-- @dsCard group="Colors" viewport="700x210" name="Semantic pairings" subtitle="Surface + text combinations that pass" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body { padding: 16px; box-sizing: border-box; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.p { border-radius: var(--radius-md); padding: 14px; min-height: 128px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; }
+.p h3 { font: 600 17px/1.2 var(--font-display); }
+.p small { font: 400 10.5px/1.5 var(--font-sans); opacity: .8; }
+.p code { font: 400 9px/1.4 ui-monospace, monospace; margin-top: auto; opacity: .65; }
+</style></head>
+<body>
+<div class="grid">
+  <div class="p" style="background: var(--surface-page); border: 1px solid var(--border-hairline);">
+    <h3 style="color: var(--text-heading)">Page</h3>
+    <small style="color: var(--text-body)">Body on warm ivory. Muted for secondary.</small>
+    <code>--surface-page + --text-body</code>
+  </div>
+  <div class="p" style="background: var(--surface-raised); border: 1px solid var(--border-silver); box-shadow: var(--shadow-sm);">
+    <h3 style="color: var(--text-heading)">Card</h3>
+    <small style="color: var(--text-muted)">Warm white raised, silver hairline.</small>
+    <code>--surface-raised + --border-silver</code>
+  </div>
+  <div class="p" style="background: var(--grad-green-depth);">
+    <h3 style="color: var(--text-on-dark)">Hero band</h3>
+    <small style="color: var(--text-on-dark-muted)">Ivory text on deep forest.</small>
+    <code style="color: var(--silver-300)">--surface-dark + --text-on-dark</code>
+  </div>
+  <div class="p" style="background: var(--surface-ink);">
+    <h3 style="color: var(--text-on-dark)">Footer ink</h3>
+    <small style="color: var(--text-on-dark-muted)">Charcoal with silver accents.</small>
+    <code style="color: var(--silver-300)">--surface-ink + --silver-300</code>
+  </div>
+</div>
+</body>
+</html>

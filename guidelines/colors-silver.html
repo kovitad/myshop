@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Silver scale" subtitle="--silver-50 … --silver-800 — the accent family" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body { padding: 16px; box-sizing: border-box; }
+.ramp { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
+.c { height: 76px; border-radius: var(--radius-sm); border: 1px solid var(--border-hairline); position: relative; }
+.c span { position: absolute; left: 6px; bottom: 5px; font: 600 9px/1 var(--font-sans); }
+.lt { color: var(--charcoal-700); } .dk { color: rgba(247,242,232,.9); }
+</style></head>
+<body>
+<div class="ramp">
+  <div class="c" style="background:var(--silver-50)"><span class="lt">50</span></div>
+  <div class="c" style="background:var(--silver-100); outline: 2px solid var(--green-500); outline-offset: 1px;"><span class="lt">100 ★</span></div>
+  <div class="c" style="background:var(--silver-200)"><span class="lt">200</span></div>
+  <div class="c" style="background:var(--silver-300); outline: 2px solid var(--green-500); outline-offset: 1px;"><span class="lt">300 ★</span></div>
+  <div class="c" style="background:var(--silver-400)"><span class="lt">400</span></div>
+  <div class="c" style="background:var(--silver-500)"><span class="lt">500</span></div>
+  <div class="c" style="background:var(--silver-600)"><span class="dk">600</span></div>
+  <div class="c" style="background:var(--silver-700); outline: 2px solid var(--green-500); outline-offset: 1px;"><span class="dk">700 ★</span></div>
+  <div class="c" style="background:var(--silver-800)"><span class="dk">800</span></div>
+</div>
+</body>
+</html>
