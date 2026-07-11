@@ -6,11 +6,22 @@ import {
   Check,
   Footprints,
   Leaf,
+  Mail,
   Menu,
+  MessageCircle,
   Moon,
+  Phone,
   Salad,
   X,
 } from 'lucide-react';
+
+// Brand logos were removed from lucide-react; inline monochrome marks instead.
+function Facebook({ size = 20 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z" /></svg>;
+}
+function Youtube({ size = 20 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.11-2.13C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.39.52A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.11 2.13c1.89.52 9.39.52 9.39.52s7.5 0 9.39-.52a3 3 0 0 0 2.11-2.13A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8ZM9.6 15.57V8.43L15.8 12l-6.2 3.57Z" /></svg>;
+}
 import './styles.css';
 
 type Lang = 'th' | 'en';
@@ -24,6 +35,7 @@ const ROUTES = [
   '/membership',
   '/account',
   '/contact',
+  '/admin',
   '/order/success',
   '/order/cancelled',
   '/privacy',
@@ -31,13 +43,17 @@ const ROUTES = [
   '/refund',
 ];
 
-type User = { id: string; name: string; email: string; member: boolean } | null;
+type User = { id: string; name: string; email: string; member: boolean; admin: boolean } | null;
 
-// Support channels. Replace lineUrl with your LINE Official Account link
-// (LINE OA console → "Add friend" URL, e.g. https://line.me/R/ti/p/@yourid).
+// Support + social channels. Email / phone / LINE are live; replace the
+// facebook + youtube URLs with your real pages when ready.
 const SUPPORT = {
-  email: 'hello@kovitad.shop',
-  lineUrl: 'https://line.me/R/ti/p/@kovitad',
+  email: 'kovitad@gmail.com',
+  phone: '0839799546',
+  lineId: 'kovitadj',
+  lineUrl: 'https://line.me/ti/p/~kovitadj',
+  facebook: 'https://facebook.com/kovitad',
+  youtube: 'https://youtube.com/@kovitad',
 };
 
 const copy = {
@@ -107,6 +123,32 @@ const copy = {
     memberBadge: 'สมาชิก',
     notMember: 'ยังไม่ได้เป็นสมาชิก',
     contactNav: 'ติดต่อเรา',
+    chatTitle: 'ช่วยเหลือ',
+    chatGreeting: 'สวัสดีค่ะ มีอะไรให้เราช่วยไหมคะ ทิ้งข้อความไว้ได้เลย หรือทักเราทางช่องทางด้านล่างได้ทันที',
+    chatPlaceholder: 'พิมพ์ข้อความ...',
+    chatSend: 'ส่ง',
+    callLabel: 'โทร',
+    emailLabelShort: 'อีเมล',
+    lineLabel: 'LINE',
+    followUs: 'ติดตามเรา',
+    ticketFormTitle: 'ส่งข้อความถึงเรา',
+    ticketName: 'ชื่อ',
+    ticketSubject: 'หัวข้อ',
+    ticketMessage: 'ข้อความ',
+    ticketSend: 'ส่งข้อความ',
+    ticketSent: 'ส่งข้อความแล้ว ขอบคุณค่ะ เราจะติดต่อกลับโดยเร็ว',
+    ticketErr: 'ส่งไม่สำเร็จ กรุณาลองใหม่',
+    adminTitle: 'แดชบอร์ดผู้ดูแล',
+    adminDenied: 'หน้านี้สำหรับผู้ดูแลระบบเท่านั้น',
+    statViews: 'การเข้าชมทั้งหมด',
+    statUnique: 'ผู้เข้าชม (ไม่ซ้ำ)',
+    statToday: 'เข้าชมวันนี้',
+    topPages: 'หน้าที่นิยม',
+    recentVisits: 'การเข้าชมล่าสุด',
+    ticketsHeading: 'ข้อความจากลูกค้า',
+    colTime: 'เวลา',
+    colPath: 'หน้า',
+    colRef: 'ที่มา',
   },
   en: {
     nav: { home: 'Home', library: 'Library', article: 'Sample article' },
@@ -174,6 +216,32 @@ const copy = {
     memberBadge: 'Member',
     notMember: 'Not a member',
     contactNav: 'Contact',
+    chatTitle: 'Support',
+    chatGreeting: 'Hi! How can we help? Leave a message here, or reach us directly through the buttons below.',
+    chatPlaceholder: 'Type a message…',
+    chatSend: 'Send',
+    callLabel: 'Call',
+    emailLabelShort: 'Email',
+    lineLabel: 'LINE',
+    followUs: 'Follow us',
+    ticketFormTitle: 'Send us a message',
+    ticketName: 'Name',
+    ticketSubject: 'Subject',
+    ticketMessage: 'Message',
+    ticketSend: 'Send message',
+    ticketSent: 'Message sent. Thank you — we will get back to you soon.',
+    ticketErr: 'Could not send. Please try again.',
+    adminTitle: 'Admin dashboard',
+    adminDenied: 'This page is for the site administrator only.',
+    statViews: 'Total views',
+    statUnique: 'Unique visitors',
+    statToday: 'Views today',
+    topPages: 'Top pages',
+    recentVisits: 'Recent visits',
+    ticketsHeading: 'Customer messages',
+    colTime: 'Time',
+    colPath: 'Page',
+    colRef: 'Referrer',
   },
 };
 
@@ -199,7 +267,8 @@ const legal = {
         'KOVITAD.shop เก็บข้อมูลเท่าที่จำเป็นในการให้บริการ ได้แก่ อีเมล ชื่อ และรายละเอียดคำสั่งซื้อ เพื่อส่งมอบคู่มือดิจิทัลและติดต่อคุณเกี่ยวกับคำสั่งซื้อ',
         'การชำระเงินดำเนินการโดย Stripe เราไม่จัดเก็บหมายเลขบัตรของคุณบนเซิร์ฟเวอร์ของเรา',
         'หากคุณสมัครรับจดหมายข่าว เราจะใช้อีเมลของคุณเพื่อส่งเนื้อหาเป็นครั้งคราวเท่านั้น และคุณสามารถยกเลิกได้ทุกเมื่อ',
-        'ต้องการให้ลบข้อมูลของคุณ ติดต่อ hello@kovitad.shop',
+        'เราบันทึกสถิติการเข้าชมเว็บไซต์ (หน้าที่เปิด เวลา และข้อมูลเบราว์เซอร์โดยประมาณ) เพื่อปรับปรุงบริการ ไม่ใช่เพื่อระบุตัวตนของคุณ',
+        'ต้องการให้ลบข้อมูลของคุณ ติดต่อ kovitad@gmail.com',
       ],
     },
     en: {
@@ -209,7 +278,8 @@ const legal = {
         'KOVITAD.shop collects only what is needed to run the service: your email, name, and order details, so we can deliver your digital guides and contact you about your order.',
         'Payments are processed by Stripe. We do not store your card number on our servers.',
         'If you subscribe to the newsletter, we use your email only to send occasional content, and you can unsubscribe at any time.',
-        'To request deletion of your data, contact hello@kovitad.shop.',
+        'We record basic site analytics (pages viewed, time, and approximate browser info) to improve the service — not to identify you personally.',
+        'To request deletion of your data, contact kovitad@gmail.com.',
       ],
     },
   },
@@ -240,7 +310,7 @@ const legal = {
       body: [
         'คู่มือดิจิทัลเป็นสินค้าที่ส่งมอบทันที โดยทั่วไปจึงไม่สามารถคืนเงินได้หลังจากดาวน์โหลดแล้ว',
         'หากลิงก์ดาวน์โหลดมีปัญหา ไฟล์เสียหาย หรือคุณถูกเรียกเก็บเงินผิดพลาด กรุณาติดต่อเราภายใน 14 วัน เรายินดีช่วยแก้ไขหรือคืนเงินตามความเหมาะสม',
-        'ติดต่อ hello@kovitad.shop พร้อมอีเมลที่ใช้สั่งซื้อ',
+        'ติดต่อ kovitad@gmail.com พร้อมอีเมลที่ใช้สั่งซื้อ',
       ],
     },
     en: {
@@ -249,7 +319,7 @@ const legal = {
       body: [
         'Digital guides are delivered instantly, so they are generally non-refundable once downloaded.',
         'If a download link fails, a file is corrupted, or you were charged in error, contact us within 14 days and we will gladly help or refund where appropriate.',
-        'Reach us at hello@kovitad.shop with the email you used to order.',
+        'Reach us at kovitad@gmail.com with the email you used to order.',
       ],
     },
   },
@@ -288,11 +358,15 @@ function App() {
 
   React.useEffect(() => { refreshUser(); }, [refreshUser]);
 
+  // Record a page view on first load and on every in-app navigation.
+  React.useEffect(() => { track(getRoute()); }, []);
+
   const nav = (next: Route) => {
     history.pushState(null, '', next);
     setRoute(next);
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    track(next);
   };
 
   return (
@@ -306,6 +380,7 @@ function App() {
         {route === '/membership' && <Membership lang={lang} nav={nav} user={user} />}
         {route === '/account' && <Account lang={lang} nav={nav} user={user} onAuth={refreshUser} />}
         {route === '/contact' && <Contact lang={lang} />}
+        {route === '/admin' && <Admin lang={lang} nav={nav} user={user} />}
         {route === '/order/success' && <OrderSuccess lang={lang} nav={nav} />}
         {route === '/order/cancelled' && <OrderCancelled lang={lang} nav={nav} />}
         {(route === '/privacy' || route === '/terms' || route === '/refund') && (
@@ -313,8 +388,18 @@ function App() {
         )}
       </main>
       <Footer lang={lang} nav={nav} />
+      <ChatWidget lang={lang} />
     </>
   );
+}
+
+// Fire-and-forget page-view beacon.
+function track(path: Route) {
+  fetch('/api/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path }),
+  }).catch(() => {});
 }
 
 function Wordmark() {
@@ -711,18 +796,197 @@ function Account({ lang, nav, user, onAuth }: { lang: Lang; nav: (r: Route) => v
   );
 }
 
+function FollowLinks() {
+  return (
+    <div className="follow-links">
+      <a href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={20} /></a>
+      <a href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={20} /></a>
+      <a href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer" aria-label="LINE"><MessageCircle size={20} /></a>
+    </div>
+  );
+}
+
+function TicketForm({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  const [form, setForm] = React.useState({ name: '', email: '', subject: '', message: '' });
+  const [note, setNote] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNote('');
+    setBusy(true);
+    try {
+      const res = await fetch('/api/support/ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { setNote(t.ticketSent); setForm({ name: '', email: '', subject: '', message: '' }); }
+      else setNote(data.error || t.ticketErr);
+    } catch {
+      setNote(t.ticketErr);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <form className="ticket-form" onSubmit={submit}>
+      <h2>{t.ticketFormTitle}</h2>
+      <input value={form.name} onChange={set('name')} placeholder={t.ticketName} aria-label={t.ticketName} />
+      <input type="email" value={form.email} onChange={set('email')} placeholder={t.emailLabel} aria-label={t.emailLabel} />
+      <input value={form.subject} onChange={set('subject')} placeholder={t.ticketSubject} aria-label={t.ticketSubject} />
+      <textarea value={form.message} onChange={set('message')} placeholder={t.ticketMessage} aria-label={t.ticketMessage} rows={4} />
+      <button className="button primary" type="submit" disabled={busy}>{t.ticketSend}</button>
+      <span className="inline-note">{note}</span>
+    </form>
+  );
+}
+
 function Contact({ lang }: { lang: Lang }) {
   const t = copy[lang];
   return (
-    <section className="page container legal">
+    <section className="page container contact">
       <p className="k-eyebrow">{t.contactNav}</p>
       <h1>{t.contactNav}</h1>
-      <p>{lang === 'th'
+      <p className="lede">{lang === 'th'
         ? 'มีคำถามเกี่ยวกับคู่มือ คอร์ส หรือการชำระเงิน? ทักหาเราได้เลย เรามักตอบกลับภายในหนึ่งวันทำการ'
         : 'Questions about a guide, a course, or your order? Reach us here — we usually reply within one business day.'}</p>
       <div className="contact-actions">
-        <a className="button primary" href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer">{lang === 'th' ? 'แชทผ่าน LINE' : 'Chat on LINE'}</a>
-        <a className="button secondary" href={`mailto:${SUPPORT.email}`}>{SUPPORT.email}</a>
+        <a className="button primary" href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={16} />{t.lineLabel}: {SUPPORT.lineId}</a>
+        <a className="button secondary" href={`tel:${SUPPORT.phone}`}><Phone size={16} />{SUPPORT.phone}</a>
+        <a className="button secondary" href={`mailto:${SUPPORT.email}`}><Mail size={16} />{SUPPORT.email}</a>
+      </div>
+      <p className="k-eyebrow follow-eyebrow">{t.followUs}</p>
+      <FollowLinks />
+      <TicketForm lang={lang} />
+    </section>
+  );
+}
+
+function ChatWidget({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  type Msg = { from: 'user' | 'bot'; text: string };
+  const [open, setOpen] = React.useState(false);
+  const [msgs, setMsgs] = React.useState<Msg[]>([{ from: 'bot', text: t.chatGreeting }]);
+  const [text, setText] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const endRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, open]);
+  React.useEffect(() => { setMsgs([{ from: 'bot', text: t.chatGreeting }]); }, [lang]);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const message = text.trim();
+    if (!message || busy) return;
+    setMsgs((m) => [...m, { from: 'user', text: message }]);
+    setText('');
+    setBusy(true);
+    try {
+      const res = await fetch('/api/support/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, lang }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setMsgs((m) => [...m, { from: 'bot', text: data.reply || t.ticketErr }]);
+    } catch {
+      setMsgs((m) => [...m, { from: 'bot', text: t.ticketErr }]);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="chat-widget">
+      {open && (
+        <div className="chat-panel" role="dialog" aria-label={t.chatTitle}>
+          <div className="chat-head">
+            <span>{t.chatTitle}</span>
+            <button onClick={() => setOpen(false)} aria-label="Close"><X size={18} /></button>
+          </div>
+          <div className="chat-body">
+            {msgs.map((m, i) => <div key={i} className={`chat-msg ${m.from}`}>{m.text}</div>)}
+            <div ref={endRef} />
+          </div>
+          <div className="chat-quick">
+            <a href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={15} />{t.lineLabel}</a>
+            <a href={`tel:${SUPPORT.phone}`}><Phone size={15} />{t.callLabel}</a>
+            <a href={`mailto:${SUPPORT.email}`}><Mail size={15} />{t.emailLabelShort}</a>
+          </div>
+          <form className="chat-input" onSubmit={send}>
+            <input value={text} onChange={(e) => setText(e.target.value)} placeholder={t.chatPlaceholder} aria-label={t.chatPlaceholder} />
+            <button className="button primary" type="submit" disabled={busy}>{t.chatSend}</button>
+          </form>
+        </div>
+      )}
+      <button className="chat-fab k-shine" onClick={() => setOpen(!open)} aria-label={t.chatTitle}>
+        {open ? <X size={22} /> : <MessageCircle size={22} />}
+      </button>
+    </div>
+  );
+}
+
+function Admin({ lang, nav, user }: { lang: Lang; nav: (r: Route) => void; user: User }) {
+  const t = copy[lang];
+  type Stats = { totalViews: number; uniqueVisitors: number; viewsToday: number; topPaths: { path: string; n: number }[]; recent: { id: number; path: string; referrer: string | null; created_at: string }[] };
+  type Ticket = { id: string; name: string | null; email: string; subject: string | null; message: string; created_at: string };
+  const [stats, setStats] = React.useState<Stats | null>(null);
+  const [tix, setTix] = React.useState<Ticket[]>([]);
+  React.useEffect(() => {
+    if (!user?.admin) return;
+    fetch('/api/admin/stats').then((r) => (r.ok ? r.json() : null)).then(setStats).catch(() => {});
+    fetch('/api/admin/tickets').then((r) => (r.ok ? r.json() : [])).then((d) => setTix(Array.isArray(d) ? d : [])).catch(() => {});
+  }, [user]);
+
+  if (!user) {
+    return (
+      <section className="page container">
+        <p className="k-eyebrow">{t.adminTitle}</p>
+        <h1>{t.adminTitle}</h1>
+        <p className="lede">{t.accountSignedOut}</p>
+        <button className="button primary" onClick={() => nav('/login')}>{t.signIn}</button>
+      </section>
+    );
+  }
+  if (!user.admin) {
+    return (
+      <section className="page container">
+        <p className="k-eyebrow">{t.adminTitle}</p>
+        <h1>{t.adminTitle}</h1>
+        <p className="lede">{t.adminDenied}</p>
+      </section>
+    );
+  }
+  const fmt = (iso: string) => new Date(iso).toLocaleString();
+  return (
+    <section className="page container admin">
+      <p className="k-eyebrow">{t.adminTitle}</p>
+      <h1>{t.adminTitle}</h1>
+      <div className="stat-row">
+        <div className="stat-card"><strong>{stats?.totalViews ?? '—'}</strong><span>{t.statViews}</span></div>
+        <div className="stat-card"><strong>{stats?.uniqueVisitors ?? '—'}</strong><span>{t.statUnique}</span></div>
+        <div className="stat-card"><strong>{stats?.viewsToday ?? '—'}</strong><span>{t.statToday}</span></div>
+      </div>
+      <h2 className="library-heading">{t.topPages}</h2>
+      <ul className="top-paths">{(stats?.topPaths || []).map((p) => <li key={p.path}><span>{p.path}</span><strong>{p.n}</strong></li>)}</ul>
+      <h2 className="library-heading">{t.recentVisits}</h2>
+      <div className="table-scroll">
+        <table className="audit-table">
+          <thead><tr><th>{t.colTime}</th><th>{t.colPath}</th><th>{t.colRef}</th></tr></thead>
+          <tbody>{(stats?.recent || []).map((v) => <tr key={v.id}><td>{fmt(v.created_at)}</td><td>{v.path}</td><td>{v.referrer || '—'}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <h2 className="library-heading">{t.ticketsHeading}</h2>
+      <div className="ticket-list">
+        {tix.map((tk) => (
+          <article className="ticket-item" key={tk.id}>
+            <p className="ticket-meta">{fmt(tk.created_at)} · {tk.email}{tk.subject ? ` · ${tk.subject}` : ''}</p>
+            <p>{tk.message}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -743,7 +1007,7 @@ function LegalPage({ kind, lang }: { kind: LegalKind; lang: Lang }) {
 
 function Footer({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const t = copy[lang];
-  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/membership')}>{t.membershipNav}</button><button onClick={() => nav('/contact')}>{t.contactNav}</button><button onClick={() => nav('/privacy')}>{t.privacyNav}</button><button onClick={() => nav('/terms')}>{t.termsNav}</button><button onClick={() => nav('/refund')}>{t.refundNav}</button></nav></footer>;
+  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p><FollowLinks /></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/membership')}>{t.membershipNav}</button><button onClick={() => nav('/contact')}>{t.contactNav}</button><button onClick={() => nav('/privacy')}>{t.privacyNav}</button><button onClick={() => nav('/terms')}>{t.termsNav}</button><button onClick={() => nav('/refund')}>{t.refundNav}</button></nav></footer>;
 }
 
 createRoot(document.getElementById('root')!).render(<App />);

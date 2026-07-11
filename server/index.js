@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import rateLimit from 'express-rate-limit';
 
 import { products, articles, findProduct, publicProduct, findArticle } from './content.js';
-import { users, newsletter, orders, subscriptions, downloads } from './db.js';
+import { users, newsletter, orders, subscriptions, downloads, tickets, visits } from './db.js';
 import { hasAccess, hasActiveMembership } from './entitlements.js';
 import { hashPassword, verifyPassword, createSession, clearSession, currentUser } from './auth.js';
 import {
@@ -15,13 +15,37 @@ import {
   constructWebhookEvent,
   retrieveSession,
 } from './stripe.js';
-import { sendReceiptEmail } from './email.js';
+import { sendReceiptEmail, sendTicketEmail } from './email.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
 const appUrl = process.env.APP_URL || `http://localhost:${port}`;
 const ebookDir = process.env.EBOOK_DIR || join(import.meta.dirname, '..', 'ebooks');
 const DOWNLOAD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Whoever signs in with this email is treated as the site admin.
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'kovitad@gmail.com').toLowerCase();
+
+// Support + contact details (used by the chat reply and /api/config).
+const CONTACT = {
+  email: process.env.SUPPORT_EMAIL || 'kovitad@gmail.com',
+  phone: process.env.SUPPORT_PHONE || '0839799546',
+  lineId: process.env.SUPPORT_LINE_ID || 'kovitadj',
+};
+
+function isAdmin(user) {
+  return Boolean(user) && String(user.email).toLowerCase() === ADMIN_EMAIL;
+}
+
+function readCookie(req, name) {
+  const header = req.headers.cookie;
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const [k, ...v] = part.trim().split('=');
+    if (k === name) return decodeURIComponent(v.join('='));
+  }
+  return null;
+}
 
 app.set('trust proxy', 1); // behind Caddy
 
@@ -109,7 +133,13 @@ app.get('/api/me', (req, res) => {
     name: user.name,
     email: user.email,
     member: hasActiveMembership(user.email),
+    admin: isAdmin(user),
   });
+});
+
+// Public contact/config for the frontend (env-configurable without a rebuild).
+app.get('/api/config', (_req, res) => {
+  res.json({ contact: CONTACT, stripe: stripeEnabled });
 });
 
 // --- Newsletter --------------------------------------------------------
@@ -120,6 +150,83 @@ app.post('/api/newsletter/subscribe', writeLimiter, (req, res) => {
   if (newsletter.byEmail(email)) return res.json({ ok: true, subscribed: true, existing: true });
   newsletter.insert({ id: randomUUID(), email, name, source: 'newsletter', createdAt: new Date().toISOString() });
   res.status(201).json({ ok: true, subscribed: true });
+});
+
+// --- Support tickets ---------------------------------------------------
+app.post('/api/support/ticket', writeLimiter, (req, res) => {
+  const name = String(req.body.name || '').trim();
+  const email = cleanEmail(req.body.email);
+  const subject = String(req.body.subject || '').trim().slice(0, 160);
+  const message = String(req.body.message || '').trim().slice(0, 4000);
+  if (!email.includes('@')) return res.status(400).json({ error: 'Valid email is required' });
+  if (message.length < 5) return res.status(400).json({ error: 'Please add a short message' });
+
+  const ticket = { id: randomUUID(), name, email, subject, message, status: 'open', createdAt: new Date().toISOString() };
+  tickets.insert(ticket);
+  sendTicketEmail({ name, email, subject, message }).catch((e) => console.error('[ticket] email failed:', e.message));
+  res.status(201).json({ ok: true });
+});
+
+// --- Support chat ------------------------------------------------------
+// AI-ready: when ANTHROPIC_API_KEY is set this is where the model call goes.
+// Until then, capture the question and reply with the contact details.
+app.post('/api/support/chat', writeLimiter, (req, res) => {
+  const message = String(req.body.message || '').trim().slice(0, 2000);
+  const lang = req.body.lang === 'en' ? 'en' : 'th';
+  if (message.length < 1) return res.status(400).json({ error: 'Empty message' });
+
+  // Capture every chat message so nothing is lost before the AI is wired.
+  const ticket = { id: randomUUID(), name: 'Website chat', email: 'chat@visitor', subject: 'Chat message', message, status: 'open', createdAt: new Date().toISOString() };
+  tickets.insert(ticket);
+  sendTicketEmail({ name: 'Website chat', email: CONTACT.email, subject: 'Chat message', message }).catch(() => {});
+
+  const reply = lang === 'en'
+    ? `Thanks for your message! Our team will get back to you soon. Meanwhile you can reach us directly — LINE: ${CONTACT.lineId} · call ${CONTACT.phone} · email ${CONTACT.email}.`
+    : `ขอบคุณสำหรับข้อความค่ะ ทีมงานจะติดต่อกลับโดยเร็ว ระหว่างนี้ทักเราได้โดยตรง — LINE: ${CONTACT.lineId} · โทร ${CONTACT.phone} · อีเมล ${CONTACT.email}`;
+  res.json({ reply, contact: CONTACT });
+});
+
+// --- Visit tracking (page views) --------------------------------------
+const trackLimiter = rateLimit({ windowMs: 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false });
+app.post('/api/track', trackLimiter, (req, res) => {
+  let visitorId = readCookie(req, 'kovitad_vid');
+  if (!visitorId) {
+    visitorId = randomUUID();
+    res.setHeader('Set-Cookie', `kovitad_vid=${visitorId}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${365 * 24 * 60 * 60}`);
+  }
+  visits.insert({
+    visitorId,
+    path: String(req.body.path || '').slice(0, 300),
+    ip: req.ip,
+    userAgent: String(req.headers['user-agent'] || '').slice(0, 300),
+    referrer: String(req.headers.referer || req.body.referrer || '').slice(0, 300),
+    createdAt: new Date().toISOString(),
+  });
+  res.status(204).end();
+});
+
+// --- Admin (audit) -----------------------------------------------------
+function requireAdmin(req, res) {
+  const user = currentUser(req);
+  if (!isAdmin(user)) { res.status(403).json({ error: 'Admin only' }); return null; }
+  return user;
+}
+
+app.get('/api/admin/stats', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+  res.json({
+    totalViews: visits.total(),
+    uniqueVisitors: visits.unique(),
+    viewsToday: visits.since(startOfDay.toISOString()),
+    topPaths: visits.topPaths(),
+    recent: visits.recent(50),
+  });
+});
+
+app.get('/api/admin/tickets', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json(tickets.all());
 });
 
 // --- Checkout (one-time) ----------------------------------------------

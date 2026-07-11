@@ -85,6 +85,27 @@ db.exec(`
     completed_at TEXT NOT NULL,
     PRIMARY KEY (user_id, lesson_id)
   );
+
+  CREATE TABLE IF NOT EXISTS tickets (
+    id         TEXT PRIMARY KEY,
+    name       TEXT,
+    email      TEXT NOT NULL,
+    subject    TEXT,
+    message    TEXT NOT NULL,
+    status     TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS visits (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    visitor_id TEXT,
+    path       TEXT,
+    ip         TEXT,
+    user_agent TEXT,
+    referrer   TEXT,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_visits_created ON visits(created_at);
 `);
 
 // --- Users -------------------------------------------------------------
@@ -184,4 +205,37 @@ export const downloads = {
     insertDownloadStmt.run(d.token, d.orderId, d.productId, d.email, d.expiresAt, d.createdAt),
   byToken: (token) => downloadByTokenStmt.get(token),
   byOrder: (orderId) => downloadByOrderStmt.get(orderId),
+};
+
+// --- Support tickets ---------------------------------------------------
+const insertTicketStmt = db.prepare(
+  'INSERT INTO tickets (id, name, email, subject, message, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+);
+const allTicketsStmt = db.prepare('SELECT * FROM tickets ORDER BY created_at DESC');
+
+export const tickets = {
+  insert: (t) =>
+    insertTicketStmt.run(t.id, t.name || null, t.email, t.subject || null, t.message, t.status, t.createdAt),
+  all: () => allTicketsStmt.all(),
+};
+
+// --- Visits (analytics + audit) ---------------------------------------
+const insertVisitStmt = db.prepare(
+  'INSERT INTO visits (visitor_id, path, ip, user_agent, referrer, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+);
+const totalVisitsStmt = db.prepare('SELECT COUNT(*) AS n FROM visits');
+const uniqueVisitorsStmt = db.prepare('SELECT COUNT(DISTINCT visitor_id) AS n FROM visits');
+const visitsSinceStmt = db.prepare('SELECT COUNT(*) AS n FROM visits WHERE created_at >= ?');
+const topPathsStmt = db.prepare(
+  'SELECT path, COUNT(*) AS n FROM visits GROUP BY path ORDER BY n DESC LIMIT 8',
+);
+const recentVisitsStmt = db.prepare('SELECT * FROM visits ORDER BY id DESC LIMIT ?');
+
+export const visits = {
+  insert: (v) => insertVisitStmt.run(v.visitorId || null, v.path || null, v.ip || null, v.userAgent || null, v.referrer || null, v.createdAt),
+  total: () => totalVisitsStmt.get().n,
+  unique: () => uniqueVisitorsStmt.get().n,
+  since: (iso) => visitsSinceStmt.get(iso).n,
+  topPaths: () => topPathsStmt.all(),
+  recent: (limit = 50) => recentVisitsStmt.all(limit),
 };

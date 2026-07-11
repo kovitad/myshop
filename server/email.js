@@ -3,8 +3,14 @@
 
 const apiKey = process.env.RESEND_API_KEY || '';
 const fromAddress = process.env.EMAIL_FROM || 'KOVITAD.shop <hello@kovitad.shop>';
+// Where support tickets are delivered.
+const supportInbox = process.env.SUPPORT_INBOX || 'kovitad@gmail.com';
 
 export const emailEnabled = Boolean(apiKey);
+
+function escapeHtml(s = '') {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
 
 async function send({ to, subject, html }) {
   if (!emailEnabled) {
@@ -44,4 +50,21 @@ export async function sendReceiptEmail({ to, product, downloadUrl }) {
       <p style="line-height:1.7;font-size:12px;color:#7a8a80">KOVITAD shares general education and personal experience, not medical advice. Talk to your clinician before changing your health routine.</p>
     </div>`;
   return send({ to, subject, html });
+}
+
+// Notifies the support inbox that a new ticket arrived.
+export async function sendTicketEmail({ name, email, subject, message }) {
+  const html = `
+    <div style="font-family:Figtree,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#20302b">
+      <p style="letter-spacing:0.14em;text-transform:uppercase;font-size:12px;color:#7a8a80">KOVITAD.shop · support ticket</p>
+      <p style="line-height:1.7"><strong>From:</strong> ${escapeHtml(name) || '—'} &lt;${escapeHtml(email)}&gt;</p>
+      <p style="line-height:1.7"><strong>Subject:</strong> ${escapeHtml(subject) || '—'}</p>
+      <hr style="border:none;border-top:1px solid #eef1f3;margin:16px 0" />
+      <p style="line-height:1.7;white-space:pre-wrap">${escapeHtml(message)}</p>
+    </div>`;
+  return send({
+    to: supportInbox,
+    subject: `Support ticket: ${subject || 'New message'}`,
+    html,
+  });
 }
