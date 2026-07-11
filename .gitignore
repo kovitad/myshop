@@ -11,9 +11,12 @@ uploads/
 .tmp/
 tmp/
 
-# Dependency/build folders if this repo later gains tooling
+# Dependency/build folders and TypeScript/Vite artifacts
 node_modules/
 dist/
 build/
 .next/
 .cache/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
