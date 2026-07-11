@@ -85,12 +85,12 @@ Log out and back in, or run:
 newgrp docker
 ```
 
-### 4. Clone and run one container
+### 4. Run one container
+
+After GitHub Actions publishes the package, you can pull it directly from GitHub Container Registry:
 
 ```bash
-git clone https://github.com/kovitad/myshop.git
-cd myshop
-docker build -t kovitad-shop .
+docker pull ghcr.io/kovitad/myshop:latest
 docker run -d \
   --name kovitad-shop \
   --restart unless-stopped \
@@ -99,7 +99,21 @@ docker run -d \
   -p 443:443/udp \
   -v caddy_data:/data \
   -v caddy_config:/config \
-  kovitad-shop
+  ghcr.io/kovitad/myshop:latest
+```
+
+If the package is private, first log in with a GitHub token that has package read access:
+
+```bash
+echo "YOUR_NEW_GITHUB_TOKEN" | docker login ghcr.io -u kovitad --password-stdin
+```
+
+Alternative: clone and build on the server:
+
+```bash
+git clone https://github.com/kovitad/myshop.git
+cd myshop
+./scripts/deploy-lightsail.sh
 ```
 
 Caddy will request the SSL certificate automatically once DNS points to the server.
@@ -120,9 +134,7 @@ https://kovitad.shop
 ### 6. Update deployment later
 
 ```bash
-cd ~/myshop
-git pull
-docker build -t kovitad-shop .
+docker pull ghcr.io/kovitad/myshop:latest
 docker rm -f kovitad-shop
 docker run -d \
   --name kovitad-shop \
@@ -132,7 +144,15 @@ docker run -d \
   -p 443:443/udp \
   -v caddy_data:/data \
   -v caddy_config:/config \
-  kovitad-shop
+  ghcr.io/kovitad/myshop:latest
+```
+
+If building directly from the repo instead:
+
+```bash
+cd ~/myshop
+git pull
+./scripts/deploy-lightsail.sh
 ```
 
 ## Notes
