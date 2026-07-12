@@ -6,8 +6,9 @@
   --grad-chrome: linear-gradient(135deg, #EEF1F3 0%, #C8CDD2 28%, #98A1A9 50%, #D4D9DD 72%, #EEF1F3 100%); /* @kind color */
   --grad-chrome-soft: linear-gradient(180deg, #F6F8F9 0%, #E3E7EA 100%); /* @kind color */
   --grad-silver-text: linear-gradient(100deg, #8F979E 0%, #E9EDF0 30%, #AEB6BD 55%, #F2F5F7 80%, #9AA3AB 100%); /* @kind color */
-  --grad-green-depth: linear-gradient(180deg, #1B4A3E 0%, #12352C 100%); /* @kind color */
-  --grad-ivory-fade: linear-gradient(180deg, rgba(247,242,232,0) 0%, #F7F2E8 100%); /* @kind color */
+  --grad-green-depth: linear-gradient(135deg, #121416 0%, #16332B 52%, #173F35 100%); /* @kind color — charcoal→forest premium */
+  --grad-ivory-fade: linear-gradient(180deg, rgba(250,250,247,0) 0%, #FAFAF7 100%); /* @kind color */
+  --grad-hero-glow: radial-gradient(120% 90% at 78% 8%, rgba(200,205,210,0.22) 0%, rgba(200,205,210,0) 40%); /* @kind color — silver luminous reflection */
   /* Scrim for text over full-bleed photography (immersive heroes) */
   --grad-scrim-hero: linear-gradient(180deg, rgba(14,33,27,0.45) 0%, rgba(14,33,27,0.30) 45%, rgba(14,33,27,0.62) 100%); /* @kind color */
   /* Shine sweep overlay (use on a masked ::after) */

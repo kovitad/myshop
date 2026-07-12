@@ -34,6 +34,26 @@ export async function createCheckoutSession({ product, email, appUrl }) {
   });
 }
 
+// Multi-item cart checkout. `items` = [{ id, name, priceAmount, currency, qty }].
+export async function createCartCheckoutSession({ items, email, appUrl }) {
+  return stripe.checkout.sessions.create({
+    mode: 'payment',
+    payment_method_types: ['card', 'promptpay'],
+    customer_email: email || undefined,
+    line_items: items.map((it) => ({
+      quantity: it.qty || 1,
+      price_data: {
+        currency: it.currency,
+        unit_amount: it.priceAmount,
+        product_data: { name: it.name },
+      },
+    })),
+    metadata: { kind: 'cart' },
+    success_url: `${appUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/order/cancelled`,
+  });
+}
+
 // Recurring membership. Requires the product to carry a Stripe recurring Price id.
 export async function createSubscriptionSession({ product, email, appUrl }) {
   if (!product.stripePriceId) {

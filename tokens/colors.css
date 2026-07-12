@@ -15,19 +15,19 @@
   --green-100: #DCE6E0;
   --green-50:  #EDF2EF;
 
-  /* Warm ivory (paper) */
-  --ivory-50:  #FDFBF6;
-  --ivory-100: #FAF6EC;
-  --ivory-200: #F7F2E8; /* brand: warm ivory */
-  --ivory-300: #EFE8D9;
-  --ivory-400: #E4DAC6;
+  /* Pearl white + cool neutral surfaces (silver-bling base) */
+  --ivory-50:  #FFFFFF;
+  --ivory-100: #F2F5F6; /* light silver tint */
+  --ivory-200: #FAFAF7; /* brand: pearl white (page) */
+  --ivory-300: #E8ECEE;
+  --ivory-400: #DBE0E3;
 
-  /* Charcoal (ink) */
-  --charcoal-900: #161E1A;
-  --charcoal-800: #1E2824; /* brand: charcoal */
-  --charcoal-700: #2A332E;
-  --charcoal-600: #3A4540;
-  --charcoal-500: #556059;
+  /* Charcoal black (ink) */
+  --charcoal-900: #121416; /* brand: charcoal black */
+  --charcoal-800: #191D20;
+  --charcoal-700: #262B2E;
+  --charcoal-600: #3A4247;
+  --charcoal-500: #556067;
 
   /* Metallic silver (accent family) */
   --silver-50:  #F6F8F9;
@@ -36,9 +36,9 @@
   --silver-300: #C8CDD2; /* brand: metallic silver */
   --silver-400: #AEB6BD;
   --silver-500: #959EA6;
-  --silver-600: #828B93;
-  --silver-700: #737B82; /* brand: dark chrome */
-  --silver-800: #5A6167;
+  --silver-600: #7C848B;
+  --silver-700: #687078; /* brand: dark chrome */
+  --silver-800: #545B62;
 
   /* Status (muted, natural — never alarming) */
   --success-600: #2F7A4D;
@@ -50,17 +50,17 @@
 
   /* ── Semantic aliases ── */
   --surface-page:   var(--ivory-200);
-  --surface-raised: #FEFCF7;   /* warm white for cards on ivory */
-  --surface-sunken: var(--ivory-300);
-  --surface-dark:   var(--green-700);
-  --surface-ink:    var(--charcoal-800);
+  --surface-raised: #FFFFFF;   /* clean white cards on pearl */
+  --surface-sunken: var(--ivory-100);
+  --surface-dark:   var(--charcoal-900);
+  --surface-ink:    var(--charcoal-900);
 
-  --text-heading:      var(--green-800);
+  --text-heading:      var(--charcoal-900);
   --text-body:         var(--charcoal-700);
-  --text-muted:        #5F6B64;
-  --text-faint:        #8A948D;
-  --text-on-dark:      #F3EFE4;
-  --text-on-dark-muted: #B9C4BE;
+  --text-muted:        #5A636A;
+  --text-faint:        #8A9298;
+  --text-on-dark:      #EEF1F3;
+  --text-on-dark-muted: #B7BFC5;
   --text-silver:       var(--silver-700);
 
   --accent:        var(--silver-300);

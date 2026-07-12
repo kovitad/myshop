@@ -152,6 +152,7 @@ const insertOrderStmt = db.prepare(
 );
 const orderByIdStmt = db.prepare('SELECT * FROM orders WHERE id = ?');
 const orderBySessionStmt = db.prepare('SELECT * FROM orders WHERE stripe_session_id = ?');
+const ordersBySessionStmt = db.prepare('SELECT * FROM orders WHERE stripe_session_id = ?');
 const ordersByEmailStmt = db.prepare('SELECT * FROM orders WHERE email = ? ORDER BY created_at DESC');
 const markOrderPaidStmt = db.prepare('UPDATE orders SET status = ?, paid_at = ? WHERE id = ?');
 
@@ -163,6 +164,7 @@ export const orders = {
     ),
   byId: (id) => orderByIdStmt.get(id),
   bySession: (sessionId) => orderBySessionStmt.get(sessionId),
+  allBySession: (sessionId) => ordersBySessionStmt.all(sessionId),
   byEmail: (email) => ordersByEmailStmt.all(email),
   markPaid: (id, paidAt) => markOrderPaidStmt.run('paid', paidAt, id),
 };

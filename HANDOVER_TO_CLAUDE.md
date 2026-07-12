@@ -54,10 +54,34 @@
 >   Lightsail (not done). PDPA cookie/consent notice recommended (analytics
 >   stores IPs).
 >
-> ### Next slices
-> B: recorded courses — **DONE** (uses sample video; add real Stream ids).
-> C: live classes (Zoom/YouTube gating). D: LINE OA / web-chat AI (chat hook
-> ready). E: SEO prerender + deploy to Lightsail.
+> ### Brand redesign — 2026-07-12 (KOVITAD.shop personal knowledge shop)
+> Redesigned into Kovitad Janlakhon's personal-brand marketplace with a
+> "silver bling" identity (pearl white + charcoal + metallic silver + forest
+> green). Tokens retuned in `tokens/colors.css` + `tokens/effects.css` (names
+> unchanged, values shifted from warm ivory → cool pearl/silver).
+> - New catalog in `server/content.js`: `CATEGORIES` (10 filter keys) + 6
+>   placeholder products (categories, formats, promo prices, ใหม่/ขายดี/instant
+>   badges) + 2 courses. `GET /api/categories`, `GET /api/catalog`.
+> - Client cart (localStorage) + `POST /api/checkout/cart` (multi-item Stripe;
+>   fulfilment now handles all orders on a session). Cart drawer in the header.
+> - Rebuilt frontend sections (`src/main.tsx`): Header (new Thai nav, social
+>   FB/YT/TikTok, cart, "ติดตาม Kovitad"), Hero, CatalogSection + category bar +
+>   ProductCard, FeaturedProduct, ContentSection (social thumbnails), Founder
+>   (+ `/about`), consent Newsletter, brand Footer (all links + social +
+>   health disclaimer). New `/shop` catalog page.
+> - Social links (exact) in SUPPORT: FB kovitad.janlakhon, YT @kovitad,
+>   TikTok @kbitidesunipo — open in new tab (header, founder, footer).
+> - Example downloadable ebooks in `ebooks/` match the 6 new product ids.
+>
+> ### Next slices / open work
+> - **Admin CMS (requested, NOT built yet):** owner wants to manage profile,
+>   add categories, and upload ebooks from an admin login. Needs the catalog
+>   moved from `content.js` into DB tables (catalog_products, catalog_categories,
+>   a settings/profile store) + multipart upload saving PDFs to
+>   `EBOOK_UPLOAD_DIR` (/data/ebooks, already checked first by the download
+>   route) + admin CRUD UI under `/admin`. This is the top next task.
+> - C: live classes (Zoom/YouTube gating). D: LINE OA / web-chat AI (chat hook
+>   ready). E: SEO prerender + deploy to Lightsail. Recorded courses (B) done.
 >
 > ### Env keys (all optional in dev; see `.env.example`)
 > `APP_URL DB_PATH STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET

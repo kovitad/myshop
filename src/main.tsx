@@ -4,16 +4,19 @@ import {
   ArrowRight,
   BookOpen,
   Check,
-  Footprints,
-  Leaf,
+  Download,
+  FileText,
   Lock,
   Mail,
   Menu,
   MessageCircle,
-  Moon,
   Phone,
   PlayCircle,
-  Salad,
+  Plus,
+  ShoppingCart,
+  Sparkles,
+  Trash2,
+  User,
   X,
 } from 'lucide-react';
 
@@ -24,6 +27,9 @@ function Facebook({ size = 20 }: { size?: number }) {
 function Youtube({ size = 20 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.11-2.13C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.39.52A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.11 2.13c1.89.52 9.39.52 9.39.52s7.5 0 9.39-.52a3 3 0 0 0 2.11-2.13A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8ZM9.6 15.57V8.43L15.8 12l-6.2 3.57Z" /></svg>;
 }
+function TikTok({ size = 20 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.5 3h-3.09v12.4a2.59 2.59 0 1 1-1.84-2.48V9.77a5.66 5.66 0 1 0 4.93 5.61V9.01a7.34 7.34 0 0 0 4.29 1.37V7.3a4.28 4.28 0 0 1-3.19-1.48Z" /></svg>;
+}
 import './styles.css';
 
 type Lang = 'th' | 'en';
@@ -31,6 +37,8 @@ type Route = string;
 
 const ROUTES = [
   '/',
+  '/shop',
+  '/about',
   '/library',
   '/courses',
   '/articles/sleep-rhythm',
@@ -48,16 +56,177 @@ const ROUTES = [
 
 type User = { id: string; name: string; email: string; member: boolean; admin: boolean } | null;
 
-// Support + social channels. Email / phone / LINE are live; replace the
-// facebook + youtube URLs with your real pages when ready.
+// Support + social channels for KOVITAD.shop (Kovitad Janlakhon).
 const SUPPORT = {
   email: 'kovitad@gmail.com',
   phone: '0839799546',
   lineId: 'kovitadj',
   lineUrl: 'https://line.me/ti/p/~kovitadj',
-  facebook: 'https://facebook.com/kovitad',
-  youtube: 'https://youtube.com/@kovitad',
+  facebook: 'https://www.facebook.com/kovitad.janlakhon/',
+  youtube: 'https://www.youtube.com/@kovitad/videos',
+  tiktok: 'https://www.tiktok.com/@kbitidesunipo',
 };
+
+// ── New-brand marketing copy (KOVITAD.shop personal knowledge shop) ──────
+const brand = {
+  th: {
+    nav: [
+      ['/', 'หน้าแรก'],
+      ['/shop', 'หนังสือและอีบุ๊ก'],
+      ['/shop', 'เครื่องมือ'],
+      ['/courses', 'คอร์สออนไลน์'],
+      ['/library', 'บทความ'],
+      ['/shop', 'วิดีโอ'],
+      ['/about', 'เกี่ยวกับผม'],
+      ['/contact', 'ติดต่อ'],
+    ] as Array<[string, string]>,
+    followCta: 'ติดตาม Kovitad',
+    heroTitle: 'ความรู้และเครื่องมือ\nเพื่อชีวิตที่ดีขึ้นในแบบของคุณ',
+    heroBody: 'อีบุ๊ก คู่มือ เครื่องมือ คอร์ส และคอนเทนต์ที่ช่วยให้เรื่องยาก กลายเป็นสิ่งที่เข้าใจง่ายและนำไปใช้ได้จริง',
+    heroPrimary: 'เลือกดูสินค้าทั้งหมด',
+    heroSecondary: 'รู้จัก Kovitad',
+    catalogTitle: 'คลังความรู้ของ Kovitad',
+    catalogBody: 'เลือกดูอีบุ๊ก เครื่องมือ คอร์ส และคอนเทนต์ ที่ออกแบบมาเพื่อช่วยให้คุณเรียนรู้และลงมือทำได้ง่ายขึ้น',
+    featuredEyebrow: 'สินค้าแนะนำ',
+    featuredTitle: 'คู่มือเริ่มต้นชีวิตแบบ Longevity',
+    featuredBody: 'แนวทางง่าย ๆ สำหรับการดูแลการนอน อาหาร การเคลื่อนไหว พลังใจ และคุณภาพชีวิตในระยะยาว',
+    featuredDetail: 'ดูรายละเอียด',
+    featuredPreview: 'อ่านตัวอย่าง',
+    learnTitle: 'เรียนรู้กับ Kovitad',
+    learnBody: 'วิดีโอ คอนเทนต์สั้น และบทความที่หยิบไปใช้ได้จริง',
+    watchOn: 'ดูบน',
+    founderHi: 'สวัสดีครับ ผม Kovitad Janlakhon',
+    founderRole: 'ผู้ก่อตั้งและผู้ดูแลคอนเทนต์ของ KOVITAD.shop',
+    founderText: 'ผมสนใจเทคโนโลยี การพัฒนาตัวเอง การเงิน การทำงาน และการมีชีวิตที่แข็งแรงอย่างมีความหมาย\n\nKOVITAD.shop เป็นพื้นที่ที่ผมใช้รวบรวมสิ่งที่ได้เรียนรู้ และเปลี่ยนมันให้เป็นคู่มือ เครื่องมือ และคอนเทนต์ ที่คนทั่วไปสามารถนำไปใช้ได้จริง',
+    followYouTube: 'ติดตามบน YouTube',
+    followFacebook: 'ติดตามบน Facebook',
+    followTikTok: 'ดู TikTok',
+    newsletterTitle: 'รับไอเดียใหม่จาก Kovitad',
+    newsletterBody: 'บทความ วิดีโอ คู่มือใหม่ และข้อเสนอพิเศษ ส่งเป็นครั้งคราวโดยไม่รบกวนมากเกินไป',
+    nameField: 'ชื่อ',
+    emailField: 'อีเมล',
+    consent: 'ฉันยินยอมรับข่าวสารและอีเมลจาก KOVITAD.shop',
+    subscribe: 'สมัครรับข่าวสาร',
+    subscribed: 'สมัครรับข่าวสารเรียบร้อยแล้ว ขอบคุณครับ',
+    consentRequired: 'กรุณายอมรับเงื่อนไขก่อนสมัคร',
+    detail: 'ดูรายละเอียด',
+    addToCart: 'เพิ่มลงตะกร้า',
+    added: 'เพิ่มแล้ว',
+    instant: 'ดาวน์โหลดทันที',
+    badgeNew: 'ใหม่',
+    badgeBest: 'ขายดี',
+    cartTitle: 'ตะกร้าสินค้า',
+    cartEmpty: 'ยังไม่มีสินค้าในตะกร้า',
+    cartTotal: 'รวม',
+    cartCheckout: 'ชำระเงิน',
+    cartRemove: 'ลบ',
+    aboutTitle: 'เกี่ยวกับผม',
+    footerTagline: 'คลังความรู้และเครื่องมือส่วนตัวของ Kovitad Janlakhon',
+    footerLinks: [
+      ['/', 'หน้าแรก'],
+      ['/shop', 'สินค้าทั้งหมด'],
+      ['/shop', 'Ebook'],
+      ['/courses', 'คอร์สออนไลน์'],
+      ['/library', 'บทความ'],
+      ['/about', 'เกี่ยวกับผม'],
+      ['/contact', 'ติดต่อ'],
+      ['/contact', 'วิธีสั่งซื้อ'],
+      ['/privacy', 'นโยบายความเป็นส่วนตัว'],
+      ['/terms', 'ข้อกำหนดการใช้งาน'],
+      ['/refund', 'การคืนเงิน'],
+    ] as Array<[string, string]>,
+    disclaimer: 'เนื้อหาบน KOVITAD.shop จัดทำขึ้นเพื่อให้ความรู้ทั่วไปเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์ การวินิจฉัย หรือการรักษาโรค โปรดปรึกษาแพทย์หรือผู้เชี่ยวชาญที่มีคุณสมบัติเหมาะสม ก่อนตัดสินใจเกี่ยวกับยา อาหารเสริม หรือภาวะสุขภาพ',
+  },
+  en: {
+    nav: [
+      ['/', 'Home'],
+      ['/shop', 'Books & ebooks'],
+      ['/shop', 'Tools'],
+      ['/courses', 'Courses'],
+      ['/library', 'Articles'],
+      ['/shop', 'Videos'],
+      ['/about', 'About me'],
+      ['/contact', 'Contact'],
+    ] as Array<[string, string]>,
+    followCta: 'Follow Kovitad',
+    heroTitle: 'Knowledge and tools\nfor a better life, your way',
+    heroBody: 'Ebooks, guides, tools, courses, and content that turn hard topics into ideas you can actually use.',
+    heroPrimary: 'Browse all products',
+    heroSecondary: 'Meet Kovitad',
+    catalogTitle: "Kovitad's knowledge shop",
+    catalogBody: 'Browse ebooks, tools, courses, and content designed to help you learn and take action more easily.',
+    featuredEyebrow: 'Featured',
+    featuredTitle: 'The longevity starter guide',
+    featuredBody: 'A simple approach to sleep, food, movement, mindset, and long-term quality of life.',
+    featuredDetail: 'View details',
+    featuredPreview: 'Read a sample',
+    learnTitle: 'Learn with Kovitad',
+    learnBody: 'Videos, short content, and practical articles you can use.',
+    watchOn: 'Watch on',
+    founderHi: "Hi, I'm Kovitad Janlakhon",
+    founderRole: 'Founder and Content Curator of KOVITAD.shop',
+    founderText: 'I care about technology, self-development, finance, work, and living a strong, meaningful life.\n\nKOVITAD.shop is where I gather what I learn and turn it into guides, tools, and content that anyone can put to use.',
+    followYouTube: 'Follow on YouTube',
+    followFacebook: 'Follow on Facebook',
+    followTikTok: 'See TikTok',
+    newsletterTitle: 'Get new ideas from Kovitad',
+    newsletterBody: 'Articles, videos, new guides, and occasional offers — never too often.',
+    nameField: 'Name',
+    emailField: 'Email',
+    consent: 'I agree to receive news and email from KOVITAD.shop',
+    subscribe: 'Subscribe',
+    subscribed: 'You are subscribed. Thank you.',
+    consentRequired: 'Please accept the terms to subscribe',
+    detail: 'View details',
+    addToCart: 'Add to cart',
+    added: 'Added',
+    instant: 'Instant download',
+    badgeNew: 'New',
+    badgeBest: 'Bestseller',
+    cartTitle: 'Your cart',
+    cartEmpty: 'Your cart is empty',
+    cartTotal: 'Total',
+    cartCheckout: 'Checkout',
+    cartRemove: 'Remove',
+    aboutTitle: 'About me',
+    footerTagline: "Kovitad Janlakhon's personal knowledge shop and tools",
+    footerLinks: [
+      ['/', 'Home'],
+      ['/shop', 'All products'],
+      ['/shop', 'Ebook'],
+      ['/courses', 'Courses'],
+      ['/library', 'Articles'],
+      ['/about', 'About me'],
+      ['/contact', 'Contact'],
+      ['/contact', 'How to order'],
+      ['/privacy', 'Privacy policy'],
+      ['/terms', 'Terms of use'],
+      ['/refund', 'Refunds'],
+    ] as Array<[string, string]>,
+    disclaimer: 'Content on KOVITAD.shop is for general education only — not medical advice, diagnosis, or treatment. Please consult a qualified professional before making decisions about medication, supplements, or health conditions.',
+  },
+};
+
+// ── Cart (client-side, persisted) ───────────────────────────────────────
+type CartItem = { id: string; title: string; price: string; amount: number };
+type CartCtx = { items: CartItem[]; add: (i: CartItem) => void; remove: (id: string) => void; clear: () => void; open: boolean; setOpen: (b: boolean) => void };
+const CartContext = React.createContext<CartCtx | null>(null);
+function useCart(): CartCtx {
+  const c = React.useContext(CartContext);
+  if (!c) throw new Error('useCart outside provider');
+  return c;
+}
+function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = React.useState<CartItem[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kovitad-cart') || '[]'); } catch { return []; }
+  });
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => { localStorage.setItem('kovitad-cart', JSON.stringify(items)); }, [items]);
+  const add = (i: CartItem) => setItems((prev) => (prev.some((p) => p.id === i.id) ? prev : [...prev, i]));
+  const remove = (id: string) => setItems((prev) => prev.filter((p) => p.id !== id));
+  const clear = () => setItems([]);
+  return <CartContext.Provider value={{ items, add, remove, clear, open, setOpen }}>{children}</CartContext.Provider>;
+}
 
 const copy = {
   th: {
@@ -276,18 +445,6 @@ const copy = {
   },
 };
 
-const topics = [
-  { icon: Leaf, th: 'โภชนาการ', en: 'Nutrition', bodyTh: 'จานอาหารที่เรียบง่าย พืชเป็นหลัก และทำซ้ำได้', bodyEn: 'Simple plates, plant-forward choices, and repeatable meals.' },
-  { icon: Moon, th: 'การนอน', en: 'Sleep', bodyTh: 'จังหวะพักผ่อนที่ช่วยให้ร่างกายฟื้นตัว', bodyEn: 'Rest rhythms that support recovery and steadier days.' },
-  { icon: Footprints, th: 'การเคลื่อนไหว', en: 'Movement', bodyTh: 'เดิน ยืด และใช้แรงในระดับที่ชีวิตจริงรับไหว', bodyEn: 'Walking, mobility, and strength that fit real life.' },
-  { icon: Salad, th: 'ใจและนิสัย', en: 'Mindset', bodyTh: 'ระบบเล็ก ๆ ที่ช่วยให้ดูแลตัวเองต่อเนื่อง', bodyEn: 'Small systems that make self-care easier to continue.' },
-];
-
-const guides = [
-  { id: 'steady-energy-plate', titleTh: 'คู่มือจานอาหารเพื่อพลังงานที่นิ่งขึ้น', titleEn: 'The steady energy plate', price: '฿390', tag: 'Nutrition' },
-  { id: 'evening-habits', titleTh: '7 นิสัยเย็นที่ช่วยเตรียมร่างกายก่อนนอน', titleEn: '7 evening habits for better rest', price: '฿290', tag: 'Sleep' },
-  { id: 'walking-reset', titleTh: 'เริ่มเดินให้เป็นระบบใน 14 วัน', titleEn: 'A 14-day walking reset', price: '฿250', tag: 'Movement' },
-];
 
 const legal = {
   privacy: {
@@ -403,10 +560,12 @@ function App() {
   };
 
   return (
-    <>
+    <CartProvider>
       <Header route={route} lang={lang} setLang={setLang} nav={nav} menuOpen={menuOpen} setMenuOpen={setMenuOpen} user={user} />
       <main>
         {route === '/' && <Home lang={lang} nav={nav} />}
+        {route === '/shop' && <Shop lang={lang} nav={nav} />}
+        {route === '/about' && <About lang={lang} nav={nav} />}
         {route === '/library' && <Library lang={lang} nav={nav} />}
         {route === '/courses' && <Courses lang={lang} nav={nav} />}
         {route.startsWith('/courses/') && <CoursePlayer slug={route.slice('/courses/'.length)} lang={lang} nav={nav} user={user} />}
@@ -423,8 +582,9 @@ function App() {
         )}
       </main>
       <Footer lang={lang} nav={nav} />
+      <CartDrawer lang={lang} nav={nav} />
       <ChatWidget lang={lang} />
-    </>
+    </CartProvider>
   );
 }
 
@@ -445,22 +605,27 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
   route: Route; lang: Lang; setLang: (l: Lang) => void; nav: (r: Route) => void; menuOpen: boolean; setMenuOpen: (v: boolean) => void; user: User;
 }) {
   const t = copy[lang];
-  const links: Array<[Route, string]> = [
-    ['/', t.nav.home],
-    ['/library', t.nav.library],
-    ['/courses', t.coursesNav],
-    ['/membership', t.membershipNav],
-  ];
+  const b = brand[lang];
+  const cart = useCart();
   return (
     <header className="site-header">
       <button className="brand-button" onClick={() => nav('/')} aria-label="KOVITAD.shop home"><Wordmark /></button>
       <nav className={menuOpen ? 'nav open' : 'nav'} aria-label="Primary navigation">
-        {links.map(([href, label]) => (
-          <button key={href} className={route === href ? 'active' : ''} onClick={() => nav(href)}>{label}</button>
+        {b.nav.map(([href, label], i) => (
+          <button key={label + i} className={route === href && href !== '/shop' ? 'active' : ''} onClick={() => nav(href)}>{label}</button>
         ))}
+        <div className="nav-social">
+          <a href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
+          <a href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={18} /></a>
+          <a href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><TikTok size={18} /></a>
+        </div>
       </nav>
       <div className="header-actions">
-        <button className="lang-toggle" onClick={() => nav(user ? '/account' : '/login')}>{user ? t.accountNav : t.signIn}</button>
+        <a className="btn-follow k-shine" href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer">{b.followCta}</a>
+        <button className="icon-btn cart-btn" onClick={() => cart.setOpen(true)} aria-label={b.cartTitle}>
+          <ShoppingCart size={20} />{cart.items.length > 0 && <span className="cart-count">{cart.items.length}</span>}
+        </button>
+        <button className="icon-btn" onClick={() => nav(user ? '/account' : '/login')} aria-label={user ? t.accountNav : t.signIn}><User size={20} /></button>
         <button className="lang-toggle" onClick={() => setLang(lang === 'th' ? 'en' : 'th')}>{lang === 'th' ? 'EN' : 'ไทย'}</button>
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">{menuOpen ? <X /> : <Menu />}</button>
       </div>
@@ -468,59 +633,339 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
   );
 }
 
+type CatalogItem = {
+  id: string; slug?: string; type: string; category: string; format: string;
+  price: string; promoPrice?: string; priceAmount: number;
+  badges?: { isNew?: boolean; isBestseller?: boolean; instant?: boolean };
+  tags?: string[]; title: { th: string; en: string }; description: { th: string; en: string }; lessonCount?: number;
+};
+type Category = { key: string; th: string; en: string };
+
 function Home({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
-  const t = copy[lang];
   return (
     <>
-      <section className="hero">
-        <div className="hero-inner">
-          <p className="k-eyebrow hero-eyebrow">{t.heroEyebrow}</p>
-          <h1>{t.heroTitle}</h1>
-          <p>{t.heroBody}</p>
+      <Hero lang={lang} nav={nav} />
+      <CatalogSection lang={lang} nav={nav} limit={6} heading />
+      <FeaturedProduct lang={lang} nav={nav} />
+      <ContentSection lang={lang} />
+      <FounderTeaser lang={lang} nav={nav} />
+      <NewsletterBrand lang={lang} />
+    </>
+  );
+}
+
+function Hero({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  return (
+    <section className="hero-new">
+      <div className="hero-grid container">
+        <div className="hero-copy">
+          <p className="k-eyebrow hero-eyebrow">KOVITAD.SHOP</p>
+          <h1 className="hero-title">{b.heroTitle}</h1>
+          <p className="hero-lede">{b.heroBody}</p>
           <div className="hero-actions">
-            <button className="button primary k-shine" onClick={() => nav('/articles/sleep-rhythm')}>{t.primaryCta}<ArrowRight size={16} /></button>
-            <button className="button secondary" onClick={() => nav('/library')}>{t.secondaryCta}</button>
+            <button className="button primary k-shine" onClick={() => nav('/shop')}>{b.heroPrimary}<ArrowRight size={16} /></button>
+            <button className="button ghost" onClick={() => nav('/about')}>{b.heroSecondary}</button>
           </div>
         </div>
-      </section>
-      <section className="section container split-heading">
-        <h2>{t.topicsTitle}</h2>
-        <p>{t.topicsBody}</p>
-      </section>
-      <section className="container topic-grid">
-        {topics.map((topic) => <TopicCard key={topic.en} topic={topic} lang={lang} />)}
-      </section>
-      <RegisterSection lang={lang} />
-      <section className="section container">
-        <div className="section-head">
-          <div><p className="k-eyebrow">DIGITAL GUIDES</p><h2>{t.featuredTitle}</h2><p>{t.featuredBody}</p></div>
-          <button className="text-link" onClick={() => nav('/library')}>{t.secondaryCta}<ArrowRight size={15} /></button>
+        <div className="hero-visual">
+          <div className="hero-panel k-shine">
+            <span className="hero-mark">K</span>
+            <div className="hero-panel-foot"><Sparkles size={16} /><span>Longevity · AI · Finance · Growth</span></div>
+          </div>
         </div>
-        <GuideGrid lang={lang} />
-      </section>
-      <Newsletter lang={lang} />
-    </>
+      </div>
+    </section>
+  );
+}
+
+function ProductCard({ item, lang, nav }: { item: CatalogItem; lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  const cart = useCart();
+  const [added, setAdded] = React.useState(false);
+  const title = lang === 'th' ? item.title.th : item.title.en;
+  const isCourse = item.type === 'course';
+  const add = () => {
+    cart.add({ id: item.id, title, price: item.promoPrice || item.price, amount: item.priceAmount });
+    setAdded(true);
+    cart.setOpen(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+  return (
+    <article className="product-card">
+      <div className="product-cover">
+        <span className="cover-mark">{title.slice(0, 1)}</span>
+        <div className="product-badges">
+          {item.badges?.isNew && <span className="badge new">{b.badgeNew}</span>}
+          {item.badges?.isBestseller && <span className="badge best">{b.badgeBest}</span>}
+        </div>
+      </div>
+      <div className="product-body">
+        <p className="product-cat">{item.category}</p>
+        <h3>{title}</h3>
+        <p className="product-desc">{lang === 'th' ? item.description.th : item.description.en}</p>
+        <div className="product-tags">
+          <span className="product-format"><FileText size={13} />{item.format}</span>
+          {item.badges?.instant && <span className="product-instant"><Download size={13} />{b.instant}</span>}
+        </div>
+        <div className="product-foot">
+          <div className="product-price">
+            {item.promoPrice
+              ? <><span className="price-now">{item.promoPrice}</span><span className="price-was">{item.price}</span></>
+              : <span className="price-now">{item.price}</span>}
+          </div>
+          <div className="product-cta">
+            {isCourse
+              ? <button className="btn-detail" onClick={() => nav(`/courses/${item.slug || item.id}`)}>{b.detail}</button>
+              : <button className="btn-detail" onClick={add}>{added ? b.added : b.addToCart}</button>}
+            <button className="btn-cart" onClick={add} aria-label={b.addToCart}>{added ? <Check size={16} /> : <Plus size={16} />}</button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function CatalogSection({ lang, nav, limit, heading }: { lang: Lang; nav: (r: Route) => void; limit?: number; heading?: boolean }) {
+  const b = brand[lang];
+  const [items, setItems] = React.useState<CatalogItem[]>([]);
+  const [cats, setCats] = React.useState<Category[]>([]);
+  const [active, setActive] = React.useState('all');
+  React.useEffect(() => {
+    fetch('/api/catalog').then((r) => r.json()).then((d) => setItems(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch('/api/categories').then((r) => r.json()).then((d) => setCats(Array.isArray(d) ? d : [])).catch(() => {});
+  }, []);
+  const filtered = active === 'all' ? items : items.filter((i) => (i.tags || []).includes(active));
+  const shown = limit ? filtered.slice(0, limit) : filtered;
+  return (
+    <section className="section container catalog">
+      {heading && (
+        <div className="catalog-head">
+          <h2>{b.catalogTitle}</h2>
+          <p className="lede">{b.catalogBody}</p>
+        </div>
+      )}
+      <div className="category-bar" role="tablist">
+        {cats.map((c) => (
+          <button key={c.key} className={`cat-tab${active === c.key ? ' active' : ''}`} onClick={() => setActive(c.key)}>
+            {lang === 'th' ? c.th : c.en}
+          </button>
+        ))}
+      </div>
+      <div className="product-grid">
+        {shown.map((it) => <ProductCard key={it.id} item={it} lang={lang} nav={nav} />)}
+      </div>
+      {limit && filtered.length > limit && (
+        <div className="catalog-more">
+          <button className="button secondary" onClick={() => nav('/shop')}>{b.heroPrimary}<ArrowRight size={16} /></button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function FeaturedProduct({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  const cart = useCart();
+  const buy = () => {
+    cart.add({ id: 'longevity-starter', title: b.featuredTitle, price: '฿290', amount: 29000 });
+    cart.setOpen(true);
+  };
+  return (
+    <section className="featured">
+      <div className="featured-grid container">
+        <div className="featured-visual k-shine">
+          <div className="ebook-mock"><span>Longevity</span><em>คู่มือเริ่มต้น</em></div>
+        </div>
+        <div className="featured-copy">
+          <p className="k-eyebrow">{b.featuredEyebrow}</p>
+          <h2>{b.featuredTitle}</h2>
+          <p>{b.featuredBody}</p>
+          <div className="hero-actions">
+            <button className="button primary k-shine" onClick={buy}>{b.featuredDetail}</button>
+            <button className="button ghost" onClick={() => nav('/articles/sleep-rhythm')}>{b.featuredPreview}</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContentSection({ lang }: { lang: Lang }) {
+  const b = brand[lang];
+  const cards = [
+    { platform: 'YouTube', url: SUPPORT.youtube, icon: <Youtube size={22} />, label: lang === 'th' ? 'วิดีโอใหม่ล่าสุด' : 'Latest videos' },
+    { platform: 'TikTok', url: SUPPORT.tiktok, icon: <TikTok size={22} />, label: lang === 'th' ? 'คอนเทนต์สั้น' : 'Short content' },
+    { platform: 'Facebook', url: SUPPORT.facebook, icon: <Facebook size={22} />, label: lang === 'th' ? 'โพสต์ที่เลือกไว้' : 'Selected posts' },
+  ];
+  return (
+    <section className="section container learn">
+      <div className="catalog-head">
+        <h2>{b.learnTitle}</h2>
+        <p className="lede">{b.learnBody}</p>
+      </div>
+      <div className="learn-grid">
+        {cards.map((c) => (
+          <a className="learn-card k-shine" key={c.platform} href={c.url} target="_blank" rel="noopener noreferrer">
+            <div className="learn-thumb">{c.icon}</div>
+            <div className="learn-meta"><span className="learn-platform">{b.watchOn} {c.platform}</span><strong>{c.label}</strong></div>
+            <ArrowRight size={18} />
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FounderTeaser({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  return (
+    <section className="founder">
+      <div className="founder-grid container">
+        <div className="founder-portrait"><span>KJ</span></div>
+        <div className="founder-copy">
+          <p className="k-eyebrow">{b.founderRole}</p>
+          <h2>{b.founderHi}</h2>
+          <p className="founder-text">{b.founderText}</p>
+          <div className="founder-actions">
+            <a className="button primary" href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer">{b.followYouTube}</a>
+            <a className="button ghost" href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer">{b.followFacebook}</a>
+            <a className="button ghost" href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer">{b.followTikTok}</a>
+          </div>
+          <button className="text-link" onClick={() => nav('/about')}>{b.aboutTitle}<ArrowRight size={15} /></button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NewsletterBrand({ lang }: { lang: Lang }) {
+  const b = brand[lang];
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [consent, setConsent] = React.useState(false);
+  const [note, setNote] = React.useState('');
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!consent) { setNote(b.consentRequired); return; }
+    const res = await fetch('/api/newsletter/subscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setNote(res.ok ? b.subscribed : (data.error || 'Error'));
+  };
+  return (
+    <section className="newsletter-brand">
+      <div className="container newsletter-inner">
+        <div className="newsletter-copy">
+          <p className="k-eyebrow">KOVITAD.SHOP</p>
+          <h2>{b.newsletterTitle}</h2>
+          <p>{b.newsletterBody}</p>
+        </div>
+        <form className="newsletter-form" onSubmit={submit}>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={b.nameField} aria-label={b.nameField} />
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={b.emailField} aria-label={b.emailField} />
+          <label className="consent"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} /><span>{b.consent}</span></label>
+          <button className="button primary k-shine" type="submit">{b.subscribe}</button>
+          <span className="form-note">{note}</span>
+        </form>
+      </div>
+    </section>
+  );
+}
+
+function Shop({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  return (
+    <section className="page">
+      <div className="container shop-head">
+        <p className="k-eyebrow">{b.catalogTitle}</p>
+        <h1>{b.catalogTitle}</h1>
+        <p className="lede">{b.catalogBody}</p>
+      </div>
+      <CatalogSection lang={lang} nav={nav} />
+    </section>
+  );
+}
+
+function About({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  return (
+    <section className="page container about">
+      <p className="k-eyebrow">{b.aboutTitle}</p>
+      <h1>{b.founderHi}</h1>
+      <p className="about-role">{b.founderRole}</p>
+      <div className="founder-portrait large"><span>KJ</span></div>
+      <p className="founder-text about-text">{b.founderText}</p>
+      <div className="founder-actions">
+        <a className="button primary" href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer">{b.followYouTube}</a>
+        <a className="button ghost" href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer">{b.followFacebook}</a>
+        <a className="button ghost" href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer">{b.followTikTok}</a>
+      </div>
+      <aside className="disclaimer"><Check size={18} /><p>{b.disclaimer}</p></aside>
+    </section>
+  );
+}
+
+function CartDrawer({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const b = brand[lang];
+  const cart = useCart();
+  const [note, setNote] = React.useState('');
+  const total = cart.items.reduce((s, i) => s + i.amount, 0);
+  const checkout = async () => {
+    setNote('');
+    const res = await fetch('/api/checkout/cart', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart.items.map((i) => ({ id: i.id })) }),
+    });
+    if (res.status === 503) { setNote(lang === 'th' ? 'ระบบชำระเงินกำลังจะเปิดใช้งานเร็ว ๆ นี้' : 'Payments are opening soon.'); return; }
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.url) { window.location.href = data.url; return; }
+    setNote(data.error || 'Error');
+  };
+  if (!cart.open) return null;
+  return (
+    <div className="cart-overlay" onClick={() => cart.setOpen(false)}>
+      <aside className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+        <div className="cart-head"><span>{b.cartTitle}</span><button onClick={() => cart.setOpen(false)} aria-label="Close"><X size={20} /></button></div>
+        <div className="cart-body">
+          {cart.items.length === 0 && <p className="inline-note">{b.cartEmpty}</p>}
+          {cart.items.map((i) => (
+            <div className="cart-item" key={i.id}>
+              <div><strong>{i.title}</strong><span>{i.price}</span></div>
+              <button onClick={() => cart.remove(i.id)} aria-label={b.cartRemove}><Trash2 size={16} /></button>
+            </div>
+          ))}
+        </div>
+        {cart.items.length > 0 && (
+          <div className="cart-foot">
+            <div className="cart-total"><span>{b.cartTotal}</span><strong>฿{(total / 100).toLocaleString()}</strong></div>
+            <button className="button primary k-shine" onClick={checkout}>{b.cartCheckout}</button>
+            {note && <p className="inline-note">{note}</p>}
+          </div>
+        )}
+      </aside>
+    </div>
   );
 }
 
 function Library({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const t = copy[lang];
+  const b = brand[lang];
   return (
     <section className="page container">
-      <p className="k-eyebrow">LIBRARY</p>
-      <h1>{t.libraryTitle}</h1>
-      <p className="lede">{t.libraryBody}</p>
-      <div className="filter-row"><span>Nutrition</span><span>Sleep</span><span>Movement</span><span>Mindset</span></div>
-      <GuideGrid lang={lang} />
+      <p className="k-eyebrow">{t.nav.article}</p>
+      <h1>{lang === 'th' ? 'บทความและคู่มือ' : 'Articles and guides'}</h1>
+      <p className="lede">{lang === 'th' ? 'อ่านแนวคิดและวิธีลงมือทำที่หยิบไปใช้ได้จริง' : 'Practical ideas and how-tos you can apply.'}</p>
       <div className="article-card feature-card">
         <BookOpen size={22} />
         <div>
-          <p className="k-eyebrow">ARTICLE</p>
+          <p className="k-eyebrow">{lang === 'th' ? 'บทความ' : 'Article'}</p>
           <h3>{t.articleTitle}</h3>
           <p>{t.articleDek}</p>
           <button className="text-link" onClick={() => nav('/articles/sleep-rhythm')}>{t.readArticle}<ArrowRight size={15} /></button>
         </div>
       </div>
+      <aside className="disclaimer"><Check size={18} /><p>{b.disclaimer}</p></aside>
     </section>
   );
 }
@@ -561,37 +1006,6 @@ function EnglishArticle() {
     <h2>Build a short evening ritual</h2>
     <p>Choose two or three cues: dim lights, take a warm shower, read something light, or write down tomorrow’s tasks. Repetition helps the body recognise the transition.</p>
   </div>;
-}
-
-function TopicCard({ topic, lang }: { topic: typeof topics[number]; lang: Lang }) {
-  const Icon = topic.icon;
-  return <article className="topic-card"><div className="icon-tile"><Icon size={22} /></div><h3>{lang === 'th' ? topic.th : topic.en}</h3><p>{lang === 'th' ? topic.bodyTh : topic.bodyEn}</p></article>;
-}
-
-function GuideGrid({ lang }: { lang: Lang }) {
-  const t = copy[lang];
-  const [note, setNote] = React.useState('');
-  const [busy, setBusy] = React.useState('');
-  const buy = async (guide: typeof guides[number]) => {
-    setNote('');
-    setBusy(guide.id);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: guide.id }),
-      });
-      if (res.status === 503) { setNote(t.paymentsSoon); return; }
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.url) { window.location.href = data.url; return; }
-      setNote(data.error || t.checkoutError);
-    } catch {
-      setNote(t.checkoutError);
-    } finally {
-      setBusy('');
-    }
-  };
-  return <><div className="guide-grid">{guides.map((guide) => <article className="guide-card k-shine" key={guide.titleEn}><p className="k-eyebrow">{guide.tag}</p><h3>{lang === 'th' ? guide.titleTh : guide.titleEn}</h3><p>{lang === 'th' ? 'ไฟล์ดิจิทัล อ่านง่าย พร้อมขั้นตอนเล็ก ๆ ที่ทำได้จริง' : 'A readable digital guide with practical steps you can repeat.'}</p><div><strong>{guide.price}</strong><button onClick={() => buy(guide)} disabled={busy === guide.id}>{t.getGuide}</button></div></article>)}</div>{note && <p className="inline-note">{note}</p>}</>;
 }
 
 function Newsletter({ lang, compact = false }: { lang: Lang; compact?: boolean }) {
@@ -943,6 +1357,7 @@ function FollowLinks() {
     <div className="follow-links">
       <a href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={20} /></a>
       <a href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={20} /></a>
+      <a href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><TikTok size={20} /></a>
       <a href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer" aria-label="LINE"><MessageCircle size={20} /></a>
     </div>
   );
@@ -1148,8 +1563,28 @@ function LegalPage({ kind, lang }: { kind: LegalKind; lang: Lang }) {
 }
 
 function Footer({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
-  const t = copy[lang];
-  return <footer className="site-footer"><div><Wordmark /><p>{t.footer}</p><p className="footer-disclaimer">{t.disclaimer}</p><FollowLinks /></div><nav><button onClick={() => nav('/')}>{t.nav.home}</button><button onClick={() => nav('/library')}>{t.nav.library}</button><button onClick={() => nav('/membership')}>{t.membershipNav}</button><button onClick={() => nav('/contact')}>{t.contactNav}</button><button onClick={() => nav('/privacy')}>{t.privacyNav}</button><button onClick={() => nav('/terms')}>{t.termsNav}</button><button onClick={() => nav('/refund')}>{t.refundNav}</button></nav></footer>;
+  const b = brand[lang];
+  return (
+    <footer className="site-footer">
+      <div className="footer-top container">
+        <div className="footer-brand">
+          <Wordmark />
+          <p className="footer-by">by Kovitad Janlakhon</p>
+          <p>{b.footerTagline}</p>
+          <FollowLinks />
+        </div>
+        <nav className="footer-nav">
+          {b.footerLinks.map(([href, label], i) => (
+            <button key={label + i} onClick={() => nav(href)}>{label}</button>
+          ))}
+        </nav>
+      </div>
+      <div className="footer-disclaimer-wrap container">
+        <p className="footer-disclaimer">{b.disclaimer}</p>
+        <p className="footer-copy">© {new Date().getFullYear()} KOVITAD.shop · Kovitad Janlakhon</p>
+      </div>
+    </footer>
+  );
 }
 
 createRoot(document.getElementById('root')!).render(<App />);

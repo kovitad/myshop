@@ -4,13 +4,14 @@ import { createReadStream, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import rateLimit from 'express-rate-limit';
 
-import { products, courses, articles, findProduct, findCourse, publicProduct, publicCourseSummary, findArticle } from './content.js';
+import { products, courses, articles, CATEGORIES, findProduct, findCourse, publicProduct, publicCourseSummary, findArticle } from './content.js';
 import { users, newsletter, orders, subscriptions, downloads, tickets, visits, progress } from './db.js';
 import { hasAccess, hasActiveMembership } from './entitlements.js';
 import { hashPassword, verifyPassword, createSession, clearSession, currentUser } from './auth.js';
 import {
   stripeEnabled,
   createCheckoutSession,
+  createCartCheckoutSession,
   createSubscriptionSession,
   constructWebhookEvent,
   retrieveSession,
@@ -82,6 +83,15 @@ function cleanEmail(email = '') {
 // --- Health + catalog --------------------------------------------------
 app.get('/api/health', (_req, res) => res.json({ ok: true, stripe: stripeEnabled }));
 app.get('/api/products', (_req, res) => res.json(products.map(publicProduct)));
+app.get('/api/categories', (_req, res) => res.json(CATEGORIES));
+// Unified storefront catalog: buyable ebooks/tools + courses (no membership).
+app.get('/api/catalog', (_req, res) => {
+  const items = [
+    ...products.filter((p) => p.type !== 'membership').map(publicProduct),
+    ...courses.map(publicCourseSummary),
+  ];
+  res.json(items);
+});
 app.get('/api/courses', (_req, res) => res.json(courses.map(publicCourseSummary)));
 app.get('/api/courses/:slug', (req, res) => {
   const course = findCourse(req.params.slug);
@@ -294,6 +304,35 @@ app.post('/api/checkout', writeLimiter, async (req, res) => {
   }
 });
 
+// --- Cart checkout (multiple items) -----------------------------------
+app.post('/api/checkout/cart', writeLimiter, async (req, res) => {
+  if (!stripeEnabled) return res.status(503).json({ error: 'Payments are not configured yet' });
+  const requested = Array.isArray(req.body.items) ? req.body.items : [];
+  const items = requested
+    .map((x) => findProduct(String(x.id || '')))
+    .filter((p) => p && p.type !== 'membership')
+    .map((p) => ({ id: p.id, name: p.title.en, priceAmount: p.priceAmount, currency: p.currency, price: p.promoPrice || p.price, qty: 1 }));
+  if (!items.length) return res.status(400).json({ error: 'Cart is empty' });
+
+  const email = cleanEmail(req.body.email) || clientEmail(req) || undefined;
+  try {
+    const session = await createCartCheckoutSession({ items, email, appUrl });
+    const now = new Date().toISOString();
+    const userId = currentUser(req)?.id || null;
+    for (const it of items) {
+      orders.insert({
+        id: randomUUID(), email: email || 'pending@stripe', userId, productId: it.id,
+        price: it.price, amount: it.priceAmount, currency: it.currency,
+        status: 'pending_payment', stripeSessionId: session.id, createdAt: now,
+      });
+    }
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('[cart checkout] error:', err.message);
+    res.status(502).json({ error: 'Could not start checkout' });
+  }
+});
+
 // --- Subscribe (membership) -------------------------------------------
 app.post('/api/subscribe', writeLimiter, async (req, res) => {
   if (!stripeEnabled) return res.status(503).json({ error: 'Payments are not configured yet' });
@@ -366,7 +405,10 @@ app.get('/api/download/:token', (req, res) => {
   const product = findProduct(record.product_id);
   if (!hasAccess(record.email, product)) return res.status(403).json({ error: 'Not entitled' });
 
-  const filePath = join(ebookDir, `${record.product_id}.pdf`);
+  // Prefer an admin-uploaded file in the persistent volume, then the baked-in one.
+  const uploadDir = process.env.EBOOK_UPLOAD_DIR || '/data/ebooks';
+  const uploaded = join(uploadDir, `${record.product_id}.pdf`);
+  const filePath = existsSync(uploaded) ? uploaded : join(ebookDir, `${record.product_id}.pdf`);
   if (!existsSync(filePath)) {
     console.error('[download] missing file:', filePath);
     return res.status(404).json({ error: 'File not available yet' });
@@ -398,29 +440,32 @@ function handleStripeEvent(event) {
   }
 }
 
-// Idempotent: marks the order paid, mints a download token, emails the receipt.
+// Idempotent: marks every order on the session paid, mints download tokens,
+// emails receipts. Handles both single-item and multi-item (cart) sessions.
 function fulfillOneTime(session) {
-  const order = orders.bySession(session.id);
-  if (!order || order.status === 'paid') return;
+  const email = session.customer_details?.email || session.customer_email;
+  const rows = orders.allBySession(session.id);
+  for (const order of rows) {
+    if (order.status === 'paid') continue;
+    const paidAt = new Date().toISOString();
+    const to = email || order.email;
+    orders.markPaid(order.id, paidAt);
 
-  const paidAt = new Date().toISOString();
-  const email = session.customer_details?.email || session.customer_email || order.email;
-  orders.markPaid(order.id, paidAt);
-
-  const product = findProduct(order.product_id);
-  if (product && product.type === 'ebook') {
-    const token = randomUUID();
-    downloads.insert({
-      token,
-      orderId: order.id,
-      productId: order.product_id,
-      email,
-      expiresAt: new Date(Date.now() + DOWNLOAD_TTL_MS).toISOString(),
-      createdAt: paidAt,
-    });
-    sendReceiptEmail({ to: email, product, downloadUrl: `${appUrl}/api/download/${token}` }).catch((e) =>
-      console.error('[email] receipt failed:', e.message),
-    );
+    const product = findProduct(order.product_id);
+    if (product && product.type === 'ebook') {
+      const token = randomUUID();
+      downloads.insert({
+        token,
+        orderId: order.id,
+        productId: order.product_id,
+        email: to,
+        expiresAt: new Date(Date.now() + DOWNLOAD_TTL_MS).toISOString(),
+        createdAt: paidAt,
+      });
+      sendReceiptEmail({ to, product, downloadUrl: `${appUrl}/api/download/${token}` }).catch((e) =>
+        console.error('[email] receipt failed:', e.message),
+      );
+    }
   }
 }
 
