@@ -1,5 +1,65 @@
 # Handover note for Claude — KOVITAD.shop
 
+> ## Update — 2026-07-12: commerce + platform layer landed
+>
+> The site is no longer a marketing/waitlist SPA. It is now a working shop +
+> early learning platform. Approved plan lives at
+> `.claude/plans/cryptic-cuddling-cookie.md`. Three commits on `main`:
+> `fcce80f` commerce core, `10e9339` login/membership UI, `9c5e7ba`
+> chat/contact/admin.
+>
+> ### Architecture decisions (locked with owner)
+> - Hybrid build: kovitad.shop owns brand + checkout + **entitlements**; heavy
+>   pieces (video, live, support AI) offload to SaaS later.
+> - **Stripe** (THB, PromptPay + card) for one-time + **Billing** membership.
+> - **SQLite via built-in `node:sqlite`** — no native module. Docker base bumped
+>   to `node:24-alpine`. DB at `/data/kovitad.db`.
+> - Stay on Vite + React + Express, one container behind Caddy.
+>
+> ### What now works (all container-tested via curl)
+> - Data layer `server/db.js` + `server/content.js` (catalog, satang prices) +
+>   `server/entitlements.js` (`hasAccess` = paid order OR active membership).
+> - Auth `server/auth.js`: pbkdf2 + httpOnly sessions. Real `login`/`logout`/`me`.
+> - Stripe `server/stripe.js`: `POST /api/checkout`, `/api/subscribe`,
+>   `/api/webhooks/stripe` (raw body, signature-verified, idempotent fulfil).
+> - Ebook delivery `GET /api/download/:token` (expiry + entitlement gated;
+>   placeholder PDFs in `ebooks/`).
+> - Email `server/email.js` (Resend; logs to console without a key): receipts +
+>   ticket notifications.
+> - Frontend `src/main.tsx`: real Stripe checkout (replaced `window.prompt`),
+>   `/login`, `/membership`, `/account` (library + downloads), `/contact`,
+>   `/order/success|cancelled`, `/privacy` `/terms` `/refund`.
+> - Support: floating **chat widget** (captures msg -> ticket, replies with
+>   contact; AI hook at `POST /api/support/chat` for `ANTHROPIC_API_KEY`),
+>   ticket form (`POST /api/support/ticket`), Facebook/YouTube/LINE follow.
+> - **Visitor analytics + admin audit**: `POST /api/track` logs views (unique
+>   cookie); admin (email == `ADMIN_EMAIL`, default `kovitad@gmail.com`) sees
+>   `/admin` — views, unique, today, top pages, recent visits, tickets.
+>
+> ### Real contact details wired in
+> Email `kovitad@gmail.com`, phone `0839799546`, LINE `kovitadj`. Facebook +
+> YouTube URLs in `SUPPORT` (src/main.tsx) are **placeholders** — replace.
+>
+> ### Needs the OWNER before go-live (not code)
+> - Thailand **Stripe** keys (test+live) + `STRIPE_MEMBERSHIP_PRICE_ID`; register
+>   webhook `https://kovitad.shop/api/webhooks/stripe`. See `.env.example`.
+> - **Resend** key for real emails. Real Facebook/YouTube URLs. Deploy to
+>   Lightsail (not done). PDPA cookie/consent notice recommended (analytics
+>   stores IPs).
+>
+> ### Next slices (not started)
+> B: recorded courses (Bunny/Cloudflare Stream) + player. C: live classes
+> (Zoom/YouTube gating). D: LINE OA / web-chat AI. E: SEO prerender + deploy.
+>
+> ### Env keys (all optional in dev; see `.env.example`)
+> `APP_URL DB_PATH STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET
+> STRIPE_MEMBERSHIP_PRICE_ID RESEND_API_KEY EMAIL_FROM SUPPORT_INBOX
+> ADMIN_EMAIL SUPPORT_EMAIL SUPPORT_PHONE SUPPORT_LINE_ID`
+>
+> --- everything below is the earlier (pre-commerce) handover ---
+
+# Handover note for Claude — KOVITAD.shop (pre-commerce)
+
 Current date: 2026-07-11
 
 ## Current objective
