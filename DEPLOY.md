@@ -85,15 +85,38 @@ Log out and back in, or run:
 newgrp docker
 ```
 
-### 4. Run one container
+### 3b. Add swap (recommended on 1 GB)
 
-After GitHub Actions publishes the package, you can pull it directly from GitHub Container Registry:
+A 2 GB swap file prevents the container from being OOM-killed under load:
+
+```bash
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+### 3c. Create the runtime .env
+
+The app now needs runtime secrets (Stripe, email, admin). Copy the template and fill it in:
+
+```bash
+curl -O https://raw.githubusercontent.com/kovitad/myshop/main/.env.example
+mv .env.example .env
+nano .env   # set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ADMIN_EMAIL, RESEND_API_KEY, APP_URL=https://kovitad.shop
+```
+
+Keep `.env` on the server only — never commit it.
+
+### 4. Run one container (pull the prebuilt image — do NOT build on 1 GB)
+
+GitHub Actions builds and publishes the image on every push to `main`. On the server, just pull and run it with your `.env`:
 
 ```bash
 docker pull ghcr.io/kovitad/myshop:latest
 docker run -d \
   --name kovitad-shop \
   --restart unless-stopped \
+  --env-file .env \
   -p 80:80 \
   -p 443:443 \
   -p 443:443/udp \
@@ -102,13 +125,19 @@ docker run -d \
   ghcr.io/kovitad/myshop:latest
 ```
 
-If the package is private, first log in with a GitHub token that has package read access:
+Or simply run the helper (pulls `:latest` + uses `.env`): `./scripts/deploy-lightsail.sh`.
+
+The SQLite database, admin-uploaded ebooks, and Caddy TLS certificates all
+persist in the `caddy_data` volume (`/data`).
+
+If the GHCR package is private, first log in with a GitHub token that has
+`read:packages` (or make the package public in GitHub → Packages → settings):
 
 ```bash
-echo "YOUR_NEW_GITHUB_TOKEN" | docker login ghcr.io -u kovitad --password-stdin
+echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u kovitad --password-stdin
 ```
 
-Alternative: clone and build on the server:
+Alternative (not recommended on 1 GB — may OOM): clone and build on the server:
 
 ```bash
 git clone https://github.com/kovitad/myshop.git
@@ -133,12 +162,22 @@ https://kovitad.shop
 
 ### 6. Update deployment later
 
+Whenever you push to `main`, GitHub Actions rebuilds the image. On the server,
+just re-run the helper (it re-pulls `:latest` and reuses `.env` + the volume):
+
+```bash
+./scripts/deploy-lightsail.sh
+```
+
+Or manually:
+
 ```bash
 docker pull ghcr.io/kovitad/myshop:latest
 docker rm -f kovitad-shop
 docker run -d \
   --name kovitad-shop \
   --restart unless-stopped \
+  --env-file .env \
   -p 80:80 \
   -p 443:443 \
   -p 443:443/udp \
