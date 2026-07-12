@@ -297,6 +297,12 @@ function requireAdmin(req, res) {
   return user;
 }
 
+// Middleware form — rejects non-admins BEFORE any body/file parsing runs.
+function adminGate(req, res, next) {
+  if (!isAdmin(currentUser(req))) return res.status(403).json({ error: 'Admin only' });
+  next();
+}
+
 app.get('/api/admin/stats', (req, res) => {
   if (!requireAdmin(req, res)) return;
   const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
@@ -386,7 +392,9 @@ app.delete('/api/admin/products/:id', (req, res) => {
 });
 
 // ── Admin CMS: ebook file upload ───────────────────────────────────────
-app.post('/api/admin/ebooks/:id', upload.single('file'), (req, res) => {
+// adminGate + rate limit run BEFORE multer so unauthenticated requests can
+// never trigger a 25 MB in-memory buffer (resource-exhaustion guard).
+app.post('/api/admin/ebooks/:id', adminGate, writeLimiter, upload.single('file'), (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   if (req.file.mimetype !== 'application/pdf' && !req.file.originalname.toLowerCase().endsWith('.pdf')) {
