@@ -34,6 +34,7 @@ db.exec(`
     title_en   TEXT NOT NULL,
     desc_th    TEXT NOT NULL,
     desc_en    TEXT NOT NULL,
+    payment_link TEXT,
     sort       INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
   );
@@ -42,6 +43,9 @@ db.exec(`
     value TEXT
   );
 `);
+
+// Migration for DBs created before payment_link existed.
+try { db.exec('ALTER TABLE catalog_products ADD COLUMN payment_link TEXT'); } catch { /* column already exists */ }
 
 // ── Row <-> object mapping ─────────────────────────────────────────────
 function rowToProduct(r) {
@@ -58,20 +62,21 @@ function rowToProduct(r) {
     badges: { isNew: !!r.badge_new, isBestseller: !!r.badge_best, instant: !!r.badge_instant },
     title: { th: r.title_th, en: r.title_en },
     description: { th: r.desc_th, en: r.desc_en },
+    paymentLink: r.payment_link || '',
   };
 }
 
 const insertProductStmt = db.prepare(`
   INSERT INTO catalog_products (id, type, tags, category, format, price, promo_price, price_amount, currency,
-    badge_new, badge_best, badge_instant, title_th, title_en, desc_th, desc_en, sort, created_at)
+    badge_new, badge_best, badge_instant, title_th, title_en, desc_th, desc_en, payment_link, sort, created_at)
   VALUES (@id, @type, @tags, @category, @format, @price, @promo_price, @price_amount, @currency,
-    @badge_new, @badge_best, @badge_instant, @title_th, @title_en, @desc_th, @desc_en, @sort, @created_at)
+    @badge_new, @badge_best, @badge_instant, @title_th, @title_en, @desc_th, @desc_en, @payment_link, @sort, @created_at)
   ON CONFLICT(id) DO UPDATE SET
     type=excluded.type, tags=excluded.tags, category=excluded.category, format=excluded.format,
     price=excluded.price, promo_price=excluded.promo_price, price_amount=excluded.price_amount,
     currency=excluded.currency, badge_new=excluded.badge_new, badge_best=excluded.badge_best,
     badge_instant=excluded.badge_instant, title_th=excluded.title_th, title_en=excluded.title_en,
-    desc_th=excluded.desc_th, desc_en=excluded.desc_en
+    desc_th=excluded.desc_th, desc_en=excluded.desc_en, payment_link=excluded.payment_link
 `);
 const allProductsStmt = db.prepare('SELECT * FROM catalog_products ORDER BY sort ASC, created_at ASC');
 const productByIdStmt = db.prepare('SELECT * FROM catalog_products WHERE id = ?');
@@ -84,6 +89,7 @@ function writeProduct(p) {
     promo_price: p.promoPrice || null, price_amount: p.priceAmount || 0, currency: p.currency || 'thb',
     badge_new: p.badges?.isNew ? 1 : 0, badge_best: p.badges?.isBestseller ? 1 : 0, badge_instant: p.badges?.instant ? 1 : 0,
     title_th: p.title?.th || '', title_en: p.title?.en || '', desc_th: p.description?.th || '', desc_en: p.description?.en || '',
+    payment_link: p.paymentLink || null,
     sort: p.sort || 0, created_at: p.createdAt || new Date().toISOString(),
   });
 }

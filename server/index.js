@@ -364,6 +364,7 @@ app.post('/api/admin/products', (req, res) => {
     badges: { isNew: !!body.badges?.isNew, isBestseller: !!body.badges?.isBestseller, instant: body.badges?.instant !== false },
     title: { th: String(body.title.th), en: String(body.title.en) },
     description: { th: String(body.description?.th || ''), en: String(body.description?.en || '') },
+    paymentLink: body.paymentLink ? String(body.paymentLink).trim().slice(0, 500) : '',
   });
   res.status(201).json({ ok: true, id, products: catalog.products.all() });
 });
@@ -469,14 +470,15 @@ app.post('/api/subscribe', writeLimiter, async (req, res) => {
 app.get('/api/orders/session/:sessionId', async (req, res) => {
   const sessionId = req.params.sessionId;
   let order = orders.bySession(sessionId);
-  if (!order) return res.status(404).json({ error: 'Order not found' });
 
-  // Fallback: if the webhook has not arrived yet, verify with Stripe and fulfill inline.
-  if (order.status !== 'paid' && stripeEnabled) {
+  // Verify with Stripe (never trust the success-page visit). Fulfil inline if the
+  // webhook has not landed yet — covers both our Checkout sessions and Payment Links.
+  if ((!order || order.status !== 'paid') && stripeEnabled) {
     try {
       const session = await retrieveSession(sessionId);
       if (session.payment_status === 'paid') {
-        fulfillOneTime(session);
+        if (orders.allBySession(sessionId).length > 0) fulfillOneTime(session);
+        else fulfillPaymentLink(session);
         order = orders.bySession(sessionId);
       }
     } catch (err) {
@@ -484,6 +486,7 @@ app.get('/api/orders/session/:sessionId', async (req, res) => {
     }
   }
 
+  if (!order) return res.status(404).json({ error: 'Order not found', status: 'pending' });
   const product = findProduct(order.product_id);
   const download = order.status === 'paid' ? downloads.byOrder(order.id) : null;
   res.json({
@@ -541,8 +544,12 @@ function handleStripeEvent(event) {
       const session = event.data.object;
       if (session.metadata?.kind === 'membership' || session.mode === 'subscription') {
         upsertMembershipFromSession(session);
-      } else {
+      } else if (orders.allBySession(session.id).length > 0) {
+        // A session we created via our own Checkout endpoints.
         fulfillOneTime(session);
+      } else {
+        // A Stripe Payment Link session (no pre-created order).
+        fulfillPaymentLink(session);
       }
       break;
     }
@@ -583,6 +590,36 @@ function fulfillOneTime(session) {
       );
     }
   }
+}
+
+// Fulfil a Stripe Payment Link purchase. The product id travels in
+// client_reference_id (we append it to the Payment Link URL on the button).
+// Only paid sessions reach here; idempotent by Stripe session id.
+function fulfillPaymentLink(session) {
+  if (session.payment_status !== 'paid') return;
+  const productId = session.client_reference_id;
+  const product = findProduct(productId);
+  if (!product || product.type !== 'ebook') return;
+  if (orders.bySession(session.id)) return; // already fulfilled
+
+  const email = session.customer_details?.email || session.customer_email;
+  if (!email) { console.error('[payment-link] no email on session', session.id); return; }
+  const paidAt = new Date().toISOString();
+  const orderId = randomUUID();
+  orders.insert({
+    id: orderId, email: cleanEmail(email), userId: null, productId: product.id,
+    price: product.promoPrice || product.price,
+    amount: session.amount_total ?? product.priceAmount,
+    currency: session.currency || product.currency,
+    status: 'paid', stripeSessionId: session.id, createdAt: paidAt, paidAt,
+  });
+  const token = randomUUID();
+  downloads.insert({
+    token, orderId, productId: product.id, email: cleanEmail(email),
+    expiresAt: new Date(Date.now() + DOWNLOAD_TTL_MS).toISOString(), createdAt: paidAt,
+  });
+  sendReceiptEmail({ to: cleanEmail(email), product, downloadUrl: `${appUrl}/api/download/${token}` })
+    .catch((e) => console.error('[email] receipt failed:', e.message));
 }
 
 function upsertMembershipFromSession(session) {

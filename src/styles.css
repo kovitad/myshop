@@ -309,6 +309,12 @@ textarea { width: 100%; border: 1px solid var(--border-silver); border-radius: 1
   .product-grid, .learn-grid { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1fr; }
 }
+/* Buy-now button (Payment Links) */
+.product-cta { width: 100%; }
+.btn-buy { flex: 1; min-height: 42px; padding: 0 18px; border-radius: var(--radius-pill); border: 1px solid var(--silver-400); background: var(--green-700); color: var(--ivory-50); font-weight: 600; white-space: nowrap; transition: background var(--dur-fast); }
+.btn-buy:hover:not(:disabled) { background: var(--green-600); }
+.btn-buy:disabled { background: var(--silver-300); color: var(--silver-700); border-color: var(--silver-300); cursor: default; }
+.field-hint { font-size: 12px; font-weight: 400; color: var(--text-faint); line-height: 1.5; }
 /* Admin CMS */
 .admin-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 28px; border-bottom: 1px solid var(--silver-200); padding-bottom: 12px; }
 .admin-tab { padding: 9px 16px; border-radius: var(--radius-pill); border: 1px solid var(--border-silver); background: var(--surface-raised); color: var(--text-muted); font-weight: 600; }

@@ -47,6 +47,7 @@ const ROUTES = [
   '/account',
   '/contact',
   '/admin',
+  '/payment-success',
   '/order/success',
   '/order/cancelled',
   '/privacy',
@@ -110,6 +111,8 @@ const brand = {
     subscribed: 'สมัครรับข่าวสารเรียบร้อยแล้ว ขอบคุณครับ',
     consentRequired: 'กรุณายอมรับเงื่อนไขก่อนสมัคร',
     detail: 'ดูรายละเอียด',
+    buyNow: 'ซื้อเลย',
+    comingSoon: 'เร็ว ๆ นี้',
     addToCart: 'เพิ่มลงตะกร้า',
     added: 'เพิ่มแล้ว',
     instant: 'ดาวน์โหลดทันที',
@@ -178,6 +181,8 @@ const brand = {
     subscribed: 'You are subscribed. Thank you.',
     consentRequired: 'Please accept the terms to subscribe',
     detail: 'View details',
+    buyNow: 'Buy now',
+    comingSoon: 'Coming soon',
     addToCart: 'Add to cart',
     added: 'Added',
     instant: 'Instant download',
@@ -601,14 +606,13 @@ function App() {
         {route === '/account' && <Account lang={lang} nav={nav} user={user} onAuth={refreshUser} />}
         {route === '/contact' && <Contact lang={lang} />}
         {route === '/admin' && <Admin lang={lang} nav={nav} user={user} />}
-        {route === '/order/success' && <OrderSuccess lang={lang} nav={nav} />}
+        {(route === '/payment-success' || route === '/order/success') && <OrderSuccess lang={lang} nav={nav} />}
         {route === '/order/cancelled' && <OrderCancelled lang={lang} nav={nav} />}
         {(route === '/privacy' || route === '/terms' || route === '/refund') && (
           <LegalPage kind={route.slice(1) as LegalKind} lang={lang} />
         )}
       </main>
       <Footer lang={lang} nav={nav} />
-      <CartDrawer lang={lang} nav={nav} />
       <ChatWidget lang={lang} />
     </CartProvider>
     </ConfigProvider>
@@ -633,7 +637,6 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
 }) {
   const t = copy[lang];
   const b = brand[lang];
-  const cart = useCart();
   const cfg = useConfig();
   return (
     <header className="site-header">
@@ -650,9 +653,6 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
       </nav>
       <div className="header-actions">
         <a className="btn-follow k-shine" href={cfg.social.youtube} target="_blank" rel="noopener noreferrer">{b.followCta}</a>
-        <button className="icon-btn cart-btn" onClick={() => cart.setOpen(true)} aria-label={b.cartTitle}>
-          <ShoppingCart size={20} />{cart.items.length > 0 && <span className="cart-count">{cart.items.length}</span>}
-        </button>
         <button className="icon-btn" onClick={() => nav(user ? '/account' : '/login')} aria-label={user ? t.accountNav : t.signIn}><User size={20} /></button>
         <button className="lang-toggle" onClick={() => setLang(lang === 'th' ? 'en' : 'th')}>{lang === 'th' ? 'EN' : 'ไทย'}</button>
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">{menuOpen ? <X /> : <Menu />}</button>
@@ -666,6 +666,7 @@ type CatalogItem = {
   price: string; promoPrice?: string; priceAmount: number;
   badges?: { isNew?: boolean; isBestseller?: boolean; instant?: boolean };
   tags?: string[]; title: { th: string; en: string }; description: { th: string; en: string }; lessonCount?: number;
+  paymentLink?: string;
 };
 type Category = { key: string; th: string; en: string };
 
@@ -707,18 +708,20 @@ function Hero({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   );
 }
 
+// Build the Stripe Payment Link URL with our product id as client_reference_id
+// so the webhook can map the completed session back to the product.
+function buyUrl(item: { paymentLink?: string; id: string }) {
+  if (!item.paymentLink) return '';
+  const sep = item.paymentLink.includes('?') ? '&' : '?';
+  return `${item.paymentLink}${sep}client_reference_id=${encodeURIComponent(item.id)}`;
+}
+
 function ProductCard({ item, lang, nav }: { item: CatalogItem; lang: Lang; nav: (r: Route) => void }) {
   const b = brand[lang];
-  const cart = useCart();
-  const [added, setAdded] = React.useState(false);
   const title = lang === 'th' ? item.title.th : item.title.en;
   const isCourse = item.type === 'course';
-  const add = () => {
-    cart.add({ id: item.id, title, price: item.promoPrice || item.price, amount: item.priceAmount });
-    setAdded(true);
-    cart.setOpen(true);
-    setTimeout(() => setAdded(false), 1500);
-  };
+  const link = buyUrl(item);
+  const buy = () => { if (link) window.location.href = link; };
   return (
     <article className="product-card">
       <div className="product-cover">
@@ -744,9 +747,8 @@ function ProductCard({ item, lang, nav }: { item: CatalogItem; lang: Lang; nav: 
           </div>
           <div className="product-cta">
             {isCourse
-              ? <button className="btn-detail" onClick={() => nav(`/courses/${item.slug || item.id}`)}>{b.detail}</button>
-              : <button className="btn-detail" onClick={add}>{added ? b.added : b.addToCart}</button>}
-            <button className="btn-cart" onClick={add} aria-label={b.addToCart}>{added ? <Check size={16} /> : <Plus size={16} />}</button>
+              ? <button className="btn-buy" onClick={() => nav(`/courses/${item.slug || item.id}`)}>{b.detail}</button>
+              : <button className="btn-buy" onClick={buy} disabled={!link}>{link ? b.buyNow : b.comingSoon}</button>}
           </div>
         </div>
       </div>
@@ -794,11 +796,13 @@ function CatalogSection({ lang, nav, limit, heading }: { lang: Lang; nav: (r: Ro
 
 function FeaturedProduct({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const b = brand[lang];
-  const cart = useCart();
-  const buy = () => {
-    cart.add({ id: 'longevity-starter', title: b.featuredTitle, price: '฿290', amount: 29000 });
-    cart.setOpen(true);
-  };
+  const [item, setItem] = React.useState<CatalogItem | null>(null);
+  React.useEffect(() => {
+    fetch('/api/catalog').then((r) => r.json()).then((d: CatalogItem[]) => {
+      setItem((Array.isArray(d) ? d : []).find((x) => x.id === 'longevity-starter') || null);
+    }).catch(() => {});
+  }, []);
+  const link = item ? buyUrl(item) : '';
   return (
     <section className="featured">
       <div className="featured-grid container">
@@ -810,7 +814,7 @@ function FeaturedProduct({ lang, nav }: { lang: Lang; nav: (r: Route) => void })
           <h2>{b.featuredTitle}</h2>
           <p>{b.featuredBody}</p>
           <div className="hero-actions">
-            <button className="button primary k-shine" onClick={buy}>{b.featuredDetail}</button>
+            <button className="button primary k-shine" onClick={() => link && (window.location.href = link)} disabled={!link}>{link ? b.buyNow : b.comingSoon}</button>
             <button className="button ghost" onClick={() => nav('/articles/sleep-rhythm')}>{b.featuredPreview}</button>
           </div>
         </div>
@@ -1618,7 +1622,7 @@ function AdminProducts({ lang }: { lang: Lang }) {
   const th = lang === 'th';
   const [items, setItems] = React.useState<AdminProduct[]>([]);
   const [cats, setCats] = React.useState<Category[]>([]);
-  const empty = { id: '', titleTh: '', titleEn: '', descTh: '', descEn: '', category: '', format: 'อีบุ๊ก PDF', baht: '', promoBaht: '', tags: '', isNew: false, isBest: false };
+  const empty = { id: '', titleTh: '', titleEn: '', descTh: '', descEn: '', category: '', format: 'อีบุ๊ก PDF', baht: '', promoBaht: '', tags: '', paymentLink: '', isNew: false, isBest: false };
   const [form, setForm] = React.useState({ ...empty });
   const [note, setNote] = React.useState('');
   const load = () => {
@@ -1640,6 +1644,7 @@ function AdminProducts({ lang }: { lang: Lang }) {
       tags: tags.length ? tags : (form.category ? [form.category, 'ebook'] : ['ebook']),
       badges: { isNew: form.isNew, isBestseller: form.isBest, instant: true },
       title: { th: form.titleTh, en: form.titleEn }, description: { th: form.descTh, en: form.descEn },
+      paymentLink: form.paymentLink.trim(),
     };
     const res = await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await res.json().catch(() => ({}));
@@ -1650,7 +1655,7 @@ function AdminProducts({ lang }: { lang: Lang }) {
     id: p.id, titleTh: p.title.th, titleEn: p.title.en, descTh: p.description.th, descEn: p.description.en,
     category: p.category, format: p.format, baht: String(Math.round((p.priceAmount || 0) / 100)),
     promoBaht: p.promoPrice ? p.promoPrice.replace(/[^0-9]/g, '') : '', tags: (p.tags || []).join(', '),
-    isNew: !!p.badges?.isNew, isBest: !!p.badges?.isBestseller,
+    paymentLink: p.paymentLink || '', isNew: !!p.badges?.isNew, isBest: !!p.badges?.isBestseller,
   });
   const del = async (id: string) => { await fetch(`/api/admin/products/${id}`, { method: 'DELETE' }); load(); };
   const uploadFile = async (id: string, file: File) => {
@@ -1692,6 +1697,12 @@ function AdminProducts({ lang }: { lang: Lang }) {
             <label className="chk"><input type="checkbox" checked={form.isBest} onChange={set('isBest')} />{th ? 'ขายดี' : 'Bestseller'}</label>
           </div>
         </div>
+        <label className="admin-field">{th ? 'ลิงก์ Stripe Payment Link' : 'Stripe Payment Link URL'}
+          <input value={form.paymentLink} onChange={set('paymentLink')} placeholder="https://buy.stripe.com/..." />
+          <span className="field-hint">{th
+            ? 'สร้าง Payment Link ใน Stripe แล้ววางลิงก์ที่นี่ · ตั้งค่า success URL เป็น /payment-success?session_id={CHECKOUT_SESSION_ID}'
+            : 'Create a Payment Link in Stripe and paste it here · set its success URL to /payment-success?session_id={CHECKOUT_SESSION_ID}'}</span>
+        </label>
         <div className="admin-actions">
           <button className="button primary" type="submit">{th ? 'บันทึกสินค้า' : 'Save product'}</button>
           {form.id && <button type="button" className="button ghost" onClick={() => setForm({ ...empty })}>{th ? 'ล้างฟอร์ม' : 'Clear'}</button>}

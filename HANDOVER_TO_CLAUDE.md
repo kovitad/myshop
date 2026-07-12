@@ -92,11 +92,35 @@
 >   Contact, ChatWidget) with SUPPORT/brand constants as fallback.
 > - `multer` added to package.json. Verified end-to-end in container.
 >
+> ### Payments — Stripe Payment Links MVP (2026-07-12)
+> Switched the ebook purchase path to **Stripe Payment Links** (one per product,
+> no card data touches this app). The multi-product **cart UI is disabled**
+> (kept in code) until dynamic Checkout Sessions return.
+> - Per product `paymentLink` field (admin-editable; `payment_link` column,
+>   migrated). Product CTA is **ซื้อเลย** → redirects to
+>   `paymentLink?client_reference_id=<productId>`.
+> - Success URL (configured on each Payment Link in the Stripe dashboard):
+>   `/payment-success?session_id={CHECKOUT_SESSION_ID}`. The success page is
+>   **not** treated as proof — it calls `/api/orders/session/:id`, which
+>   verifies with Stripe (retrieve session, `payment_status==='paid'`) and
+>   fulfils inline; the webhook is the primary path.
+> - Webhook `checkout.session.completed`: signature-verified; branches to
+>   `fulfillPaymentLink(session)` when there's no pre-created order. It maps
+>   `session.client_reference_id → product`, creates a paid order (product,
+>   amount, currency, email, session id), mints an expiring download token,
+>   and emails the receipt + download link. Idempotent by session id.
+> - Ebook files are never public: `/api/download/:token` is token-gated,
+>   expiring, and entitlement-checked; Caddy serves only /srv/dist.
+> - Keys stay in env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (verified
+>   absent from the client bundle). Cancel returns to the referring shop page.
+>
 > ### Next slices / open work
-> - C: live classes (Zoom/YouTube gating). D: LINE OA / web-chat AI (chat hook
->   ready). E: SEO prerender + deploy to Lightsail. Recorded courses (B) done.
-> - Admin course management (courses still in code) + image uploads for product
->   covers are natural follow-ups.
+> - Owner must, in Stripe: create a Product+Price+Payment Link per ebook, set
+>   each link's success URL to `/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+>   paste the URL into /admin, add the webhook endpoint + `STRIPE_WEBHOOK_SECRET`.
+> - Later: dynamic Checkout Sessions + re-enable cart. C: live classes.
+>   D: LINE OA / web-chat AI. E: SEO prerender + deploy to Lightsail.
+> - Admin course management + product cover image uploads are follow-ups.
 >
 > ### Env keys (all optional in dev; see `.env.example`)
 > `APP_URL DB_PATH STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET
