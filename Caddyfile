@@ -19,8 +19,16 @@ kovitad.shop, www.kovitad.shop {
   encode gzip zstd
 
   header {
+    # HSTS (HTTPS-only host) — force TLS for a year, incl. subdomains
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Content-Type-Options nosniff
+    X-Frame-Options DENY
     Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    # Google Fonts (CSS + font files) and the sample course video are allowed;
+    # everything else is same-origin. No inline/remote scripts.
+    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' https://commondatastorage.googleapis.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+    -Server
   }
 
   @static path *.css *.js *.json *.png *.jpg *.jpeg *.gif *.webp *.bmp *.svg *.ico *.woff *.woff2

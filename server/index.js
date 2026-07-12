@@ -19,6 +19,7 @@ import {
   retrieveSession,
 } from './stripe.js';
 import { sendReceiptEmail, sendTicketEmail } from './email.js';
+import { scheduleBackups } from './backup.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -71,6 +72,15 @@ function readCookie(req, name) {
 }
 
 app.set('trust proxy', 1); // behind Caddy
+
+// Lock the admin account: seed it from env on first boot so it can never be
+// claimed by a public registration. Set ADMIN_PASSWORD in the server .env.
+(function seedAdmin() {
+  const pw = process.env.ADMIN_PASSWORD;
+  if (!pw || users.byEmail(ADMIN_EMAIL)) return;
+  users.insert({ id: randomUUID(), name: 'Admin', email: ADMIN_EMAIL, passwordHash: hashPassword(pw), createdAt: new Date().toISOString() });
+  console.log('[admin] seeded admin account for', ADMIN_EMAIL);
+})();
 
 // --- Stripe webhook needs the raw body, so it is mounted BEFORE express.json(). ---
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), (req, res) => {
@@ -165,6 +175,7 @@ app.post('/api/register', writeLimiter, (req, res) => {
   if (name.length < 2) return res.status(400).json({ error: 'Name is required' });
   if (!email.includes('@')) return res.status(400).json({ error: 'Valid email is required' });
   if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  if (email === ADMIN_EMAIL) return res.status(403).json({ error: 'This email is reserved' });
   if (users.byEmail(email)) return res.status(409).json({ error: 'Email is already registered' });
 
   const now = new Date().toISOString();
@@ -647,4 +658,5 @@ function upsertMembershipFromSubscription(sub) {
 
 app.listen(port, () => {
   console.log(`KOVITAD.shop API listening on ${port} (stripe: ${stripeEnabled ? 'on' : 'off'})`);
+  scheduleBackups();
 });

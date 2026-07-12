@@ -197,6 +197,22 @@ git pull
 ## Notes
 
 - This uses exactly one runtime container. Inside it, Caddy serves HTTPS/static files and proxies `/api/*` to the Node API.
-- Caddy HTTPS certificates and the small JSON app database are stored in the Docker volume `caddy_data` mounted at `/data`.
+- Caddy HTTPS certificates, the SQLite database (`/data/kovitad.db`), admin-uploaded ebooks (`/data/ebooks`), and rotated DB backups (`/data/backups`) all persist in the Docker volume `caddy_data` mounted at `/data`.
 - The large `uploads/` scratch folder is intentionally excluded from Git and Docker builds.
-- External prototype dependencies are loaded from CDN by the UI kit HTML.
+
+### Security
+
+- Set `ADMIN_PASSWORD` in `.env`. The admin account is created on first boot and locked — the admin email cannot be claimed via the public sign-up.
+- Caddy sends HSTS, CSP, X-Frame-Options, and related headers on the live domain.
+- Stripe secrets stay in `.env` only (never in the image/repo). Card data is handled entirely by Stripe (Payment Links).
+
+### Backups
+
+- The app writes a daily `VACUUM INTO` snapshot to `/data/backups` (keeps the last 7; tune with `BACKUP_KEEP` / `BACKUP_INTERVAL_HOURS`).
+- These live in the same volume — for real disaster recovery, copy them off-box, e.g. from your laptop:
+
+```bash
+scp -r ubuntu@YOUR_STATIC_IP:/var/lib/docker/volumes/caddy_data/_data/backups ./kovitad-backups
+```
+
+Or dump the current DB on demand: `docker exec kovitad-shop sh -c "cp /data/kovitad.db /data/backups/manual-$(date +%F).db"`.
