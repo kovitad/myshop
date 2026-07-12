@@ -82,6 +82,51 @@ export const products = [
   },
 ];
 
+// Recorded courses. Each is also a purchasable product (type 'course').
+// videoUrl is a placeholder sample until real Bunny/Cloudflare Stream ids are
+// added; swap per lesson. `preview: true` lessons are watchable before buying.
+const SAMPLE_VIDEO = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+export const courses = [
+  {
+    id: 'sleep-reset-course',
+    slug: 'sleep-reset-course',
+    type: 'course',
+    topic: 'Sleep',
+    price: '฿690',
+    priceAmount: 69000,
+    currency: 'thb',
+    title: { th: 'คอร์สปรับการนอน 7 วัน', en: 'The 7-day sleep reset' },
+    description: {
+      th: 'คอร์สวิดีโอสั้น ๆ เพื่อสร้างจังหวะการนอนที่ทำซ้ำได้ในชีวิตจริง',
+      en: 'A short video course to build a repeatable sleep rhythm for real life.',
+    },
+    lessons: [
+      { id: 'l1', duration: '4:12', preview: true, videoUrl: SAMPLE_VIDEO, title: { th: 'เริ่มต้นและวิธีใช้คอร์ส', en: 'Welcome and how this works' } },
+      { id: 'l2', duration: '8:03', preview: false, videoUrl: SAMPLE_VIDEO, title: { th: 'เวลาตื่นที่สม่ำเสมอ', en: 'A consistent wake time' } },
+      { id: 'l3', duration: '6:47', preview: false, videoUrl: SAMPLE_VIDEO, title: { th: 'พิธีกรรมเย็นที่สั้น', en: 'A short evening ritual' } },
+    ],
+  },
+  {
+    id: 'steady-energy-course',
+    slug: 'steady-energy-course',
+    type: 'course',
+    topic: 'Nutrition',
+    price: '฿790',
+    priceAmount: 79000,
+    currency: 'thb',
+    title: { th: 'คอร์สจานอาหารพลังงานนิ่ง', en: 'The steady energy plate course' },
+    description: {
+      th: 'วิดีโอสอนจัดจานอาหารที่เรียบง่ายและทำซ้ำได้',
+      en: 'Video lessons for building simple, repeatable everyday plates.',
+    },
+    lessons: [
+      { id: 'l1', duration: '3:30', preview: true, videoUrl: SAMPLE_VIDEO, title: { th: 'ภาพรวมของคอร์ส', en: 'Course overview' } },
+      { id: 'l2', duration: '9:10', preview: false, videoUrl: SAMPLE_VIDEO, title: { th: 'โครงจานพื้นฐาน', en: 'The base plate framework' } },
+    ],
+  },
+];
+
 export const articles = [
   {
     slug: 'sleep-rhythm',
@@ -99,13 +144,33 @@ export const articles = [
 ];
 
 export function findProduct(id) {
-  return products.find((p) => p.id === id) || null;
+  return [...products, ...courses].find((p) => p.id === id) || null;
+}
+
+export function findCourse(slug) {
+  return courses.find((c) => c.slug === slug || c.id === slug) || null;
 }
 
 export function publicProduct(p) {
-  // Never leak internal Stripe ids to the client.
-  const { stripePriceId, ...rest } = p;
+  // Never leak internal Stripe ids or lesson video sources to the client.
+  const { stripePriceId, lessons, ...rest } = p;
   return rest;
+}
+
+// Course card for the catalog (no lesson videoUrls).
+export function publicCourseSummary(c) {
+  return {
+    id: c.id,
+    slug: c.slug,
+    type: c.type,
+    topic: c.topic,
+    price: c.price,
+    priceAmount: c.priceAmount,
+    currency: c.currency,
+    title: c.title,
+    description: c.description,
+    lessonCount: c.lessons.length,
+  };
 }
 
 export function findArticle(slug) {

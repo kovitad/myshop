@@ -207,6 +207,18 @@ export const downloads = {
   byOrder: (orderId) => downloadByOrderStmt.get(orderId),
 };
 
+// --- Lesson progress ---------------------------------------------------
+const upsertProgressStmt = db.prepare(
+  `INSERT INTO progress (user_id, lesson_id, completed_at) VALUES (?, ?, ?)
+   ON CONFLICT(user_id, lesson_id) DO UPDATE SET completed_at = excluded.completed_at`,
+);
+const progressForUserStmt = db.prepare('SELECT lesson_id FROM progress WHERE user_id = ?');
+
+export const progress = {
+  complete: (userId, lessonId) => upsertProgressStmt.run(userId, lessonId, new Date().toISOString()),
+  forUser: (userId) => progressForUserStmt.all(userId).map((r) => r.lesson_id),
+};
+
 // --- Support tickets ---------------------------------------------------
 const insertTicketStmt = db.prepare(
   'INSERT INTO tickets (id, name, email, subject, message, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',

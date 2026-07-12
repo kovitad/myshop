@@ -35,6 +35,13 @@
 > - **Visitor analytics + admin audit**: `POST /api/track` logs views (unique
 >   cookie); admin (email == `ADMIN_EMAIL`, default `kovitad@gmail.com`) sees
 >   `/admin` — views, unique, today, top pages, recent visits, tickets.
+> - **Recorded courses (Slice B)**: `courses` in `server/content.js` (lessons,
+>   sample `videoUrl` placeholder). `GET /api/courses`, `GET /api/courses/:slug`
+>   (lesson `videoUrl` returned only if `preview` or entitled), `POST
+>   /api/progress`. Frontend `/courses` catalog + `/courses/:slug` player
+>   (video, lesson list, lock states, mark-complete, buy/join CTA). Courses are
+>   purchasable products; show in `/account`. Swap `SAMPLE_VIDEO` per lesson for
+>   real Bunny/Cloudflare Stream ids next.
 >
 > ### Real contact details wired in
 > Email `kovitad@gmail.com`, phone `0839799546`, LINE `kovitadj`. Facebook +
@@ -47,9 +54,10 @@
 >   Lightsail (not done). PDPA cookie/consent notice recommended (analytics
 >   stores IPs).
 >
-> ### Next slices (not started)
-> B: recorded courses (Bunny/Cloudflare Stream) + player. C: live classes
-> (Zoom/YouTube gating). D: LINE OA / web-chat AI. E: SEO prerender + deploy.
+> ### Next slices
+> B: recorded courses — **DONE** (uses sample video; add real Stream ids).
+> C: live classes (Zoom/YouTube gating). D: LINE OA / web-chat AI (chat hook
+> ready). E: SEO prerender + deploy to Lightsail.
 >
 > ### Env keys (all optional in dev; see `.env.example`)
 > `APP_URL DB_PATH STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET

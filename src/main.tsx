@@ -6,11 +6,13 @@ import {
   Check,
   Footprints,
   Leaf,
+  Lock,
   Mail,
   Menu,
   MessageCircle,
   Moon,
   Phone,
+  PlayCircle,
   Salad,
   X,
 } from 'lucide-react';
@@ -30,6 +32,7 @@ type Route = string;
 const ROUTES = [
   '/',
   '/library',
+  '/courses',
   '/articles/sleep-rhythm',
   '/login',
   '/membership',
@@ -149,6 +152,20 @@ const copy = {
     colTime: 'เวลา',
     colPath: 'หน้า',
     colRef: 'ที่มา',
+    coursesNav: 'คอร์ส',
+    coursesTitle: 'คอร์สวิดีโอ',
+    coursesBody: 'คอร์สวิดีโอสั้น ๆ ที่ทำตามได้จริง เรียนเมื่อไรก็ได้ตามจังหวะของคุณ',
+    viewCourse: 'ดูคอร์ส',
+    lessonsWord: 'บทเรียน',
+    getCourse: 'ซื้อคอร์สนี้',
+    joinToWatch: 'เป็นสมาชิกเพื่อดูทั้งหมด',
+    lockedLesson: 'ปลดล็อกด้วยการซื้อคอร์สนี้หรือเป็นสมาชิก',
+    previewBadge: 'ดูตัวอย่างได้',
+    markComplete: 'ทำเครื่องหมายว่าเรียนจบ',
+    completedWord: 'เรียนจบแล้ว',
+    signInToTrack: 'เข้าสู่ระบบเพื่อบันทึกความคืบหน้า',
+    openCourse: 'เปิดคอร์ส',
+    backCourses: 'คอร์สทั้งหมด',
   },
   en: {
     nav: { home: 'Home', library: 'Library', article: 'Sample article' },
@@ -242,6 +259,20 @@ const copy = {
     colTime: 'Time',
     colPath: 'Page',
     colRef: 'Referrer',
+    coursesNav: 'Courses',
+    coursesTitle: 'Video courses',
+    coursesBody: 'Short, practical video courses you can follow at your own pace, anytime.',
+    viewCourse: 'View course',
+    lessonsWord: 'lessons',
+    getCourse: 'Get this course',
+    joinToWatch: 'Join membership to watch all',
+    lockedLesson: 'Unlock by buying this course or joining membership',
+    previewBadge: 'Free preview',
+    markComplete: 'Mark complete',
+    completedWord: 'Completed',
+    signInToTrack: 'Sign in to save your progress',
+    openCourse: 'Open course',
+    backCourses: 'All courses',
   },
 };
 
@@ -327,7 +358,9 @@ const legal = {
 
 function getRoute(): Route {
   const path = window.location.pathname;
-  return ROUTES.includes(path) ? path : '/';
+  if (ROUTES.includes(path)) return path;
+  if (path.startsWith('/courses/')) return path; // dynamic course slug
+  return '/';
 }
 
 function App() {
@@ -375,6 +408,8 @@ function App() {
       <main>
         {route === '/' && <Home lang={lang} nav={nav} />}
         {route === '/library' && <Library lang={lang} nav={nav} />}
+        {route === '/courses' && <Courses lang={lang} nav={nav} />}
+        {route.startsWith('/courses/') && <CoursePlayer slug={route.slice('/courses/'.length)} lang={lang} nav={nav} user={user} />}
         {route === '/articles/sleep-rhythm' && <Article lang={lang} nav={nav} />}
         {route === '/login' && <Login lang={lang} nav={nav} onAuth={refreshUser} />}
         {route === '/membership' && <Membership lang={lang} nav={nav} user={user} />}
@@ -413,8 +448,8 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
   const links: Array<[Route, string]> = [
     ['/', t.nav.home],
     ['/library', t.nav.library],
+    ['/courses', t.coursesNav],
     ['/membership', t.membershipNav],
-    ['/articles/sleep-rhythm', t.nav.article],
   ];
   return (
     <header className="site-header">
@@ -743,7 +778,7 @@ function Membership({ lang, nav, user }: { lang: Lang; nav: (r: Route) => void; 
 
 function Account({ lang, nav, user, onAuth }: { lang: Lang; nav: (r: Route) => void; user: User; onAuth: () => Promise<void> | void }) {
   const t = copy[lang];
-  type Owned = { id: string; product: { id: string; type?: string; title?: { th: string; en: string } }; downloadUrl: string | null };
+  type Owned = { id: string; product: { id: string; slug?: string; type?: string; title?: { th: string; en: string } }; downloadUrl: string | null };
   const [items, setItems] = React.useState<Owned[]>([]);
   const [loaded, setLoaded] = React.useState(false);
   React.useEffect(() => {
@@ -785,13 +820,120 @@ function Account({ lang, nav, user, onAuth }: { lang: Lang; nav: (r: Route) => v
             <p className="k-eyebrow">{it.product?.type || 'guide'}</p>
             <h3>{it.product?.title ? (lang === 'th' ? it.product.title.th : it.product.title.en) : it.product.id}</h3>
             <div>
-              {it.downloadUrl
-                ? <a className="text-link" href={it.downloadUrl}>{t.successDownload}<ArrowRight size={15} /></a>
-                : <span />}
+              {it.product?.type === 'course'
+                ? <button className="text-link" onClick={() => nav(`/courses/${it.product.slug || it.product.id}`)}>{t.openCourse}<ArrowRight size={15} /></button>
+                : it.downloadUrl
+                  ? <a className="text-link" href={it.downloadUrl}>{t.successDownload}<ArrowRight size={15} /></a>
+                  : <span />}
             </div>
           </article>
         ))}
       </div>
+    </section>
+  );
+}
+
+type CourseCard = { id: string; slug: string; topic: string; price: string; title: { th: string; en: string }; description: { th: string; en: string }; lessonCount: number };
+type Lesson = { id: string; title: { th: string; en: string }; duration: string; preview: boolean; locked: boolean; videoUrl: string | null; completed: boolean };
+type CourseDetail = { id: string; slug: string; topic: string; price: string; title: { th: string; en: string }; description: { th: string; en: string }; entitled: boolean; lessons: Lesson[] };
+
+function Courses({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
+  const t = copy[lang];
+  const [list, setList] = React.useState<CourseCard[]>([]);
+  React.useEffect(() => {
+    fetch('/api/courses').then((r) => r.json()).then((d) => setList(Array.isArray(d) ? d : [])).catch(() => {});
+  }, []);
+  return (
+    <section className="page container">
+      <p className="k-eyebrow">{t.coursesNav}</p>
+      <h1>{t.coursesTitle}</h1>
+      <p className="lede">{t.coursesBody}</p>
+      <div className="guide-grid">
+        {list.map((c) => (
+          <article className="guide-card k-shine" key={c.id}>
+            <p className="k-eyebrow">{c.topic}</p>
+            <h3>{lang === 'th' ? c.title.th : c.title.en}</h3>
+            <p>{lang === 'th' ? c.description.th : c.description.en}</p>
+            <p className="course-meta">{c.lessonCount} {t.lessonsWord}</p>
+            <div><strong>{c.price}</strong><button onClick={() => nav(`/courses/${c.slug}`)}>{t.viewCourse}</button></div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CoursePlayer({ slug, lang, nav, user }: { slug: string; lang: Lang; nav: (r: Route) => void; user: User }) {
+  const t = copy[lang];
+  const [course, setCourse] = React.useState<CourseDetail | null>(null);
+  const [active, setActive] = React.useState(0);
+  const [completed, setCompleted] = React.useState<Set<string>>(new Set());
+  const [note, setNote] = React.useState('');
+  React.useEffect(() => {
+    fetch(`/api/courses/${slug}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c: CourseDetail | null) => {
+        setCourse(c);
+        if (c) setCompleted(new Set(c.lessons.filter((l) => l.completed).map((l) => l.id)));
+      })
+      .catch(() => {});
+  }, [slug, user]);
+
+  if (!course) {
+    return <section className="page container"><p className="lede">…</p></section>;
+  }
+  const lesson = course.lessons[active];
+  const buy = async () => {
+    setNote('');
+    const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: course.id }) });
+    if (res.status === 503) { setNote(t.paymentsSoon); return; }
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.url) { window.location.href = data.url; return; }
+    setNote(data.error || t.checkoutError);
+  };
+  const markDone = async () => {
+    if (!user) { setNote(t.signInToTrack); return; }
+    await fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId: lesson.id }) });
+    setCompleted(new Set([...completed, lesson.id]));
+  };
+  return (
+    <section className="page container course-player">
+      <button className="text-link back" onClick={() => nav('/courses')}>← {t.backCourses}</button>
+      <p className="k-eyebrow">{course.topic}</p>
+      <h1>{lang === 'th' ? course.title.th : course.title.en}</h1>
+      <div className="course-layout">
+        <div className="course-main">
+          {lesson.videoUrl
+            ? <video className="course-video" src={lesson.videoUrl} controls />
+            : (
+              <div className="course-locked">
+                <Lock size={26} />
+                <p>{t.lockedLesson}</p>
+                <div className="contact-actions">
+                  <button className="button primary k-shine" onClick={buy}>{t.getCourse} · {course.price}</button>
+                  <button className="button secondary" onClick={() => nav('/membership')}>{t.joinToWatch}</button>
+                </div>
+              </div>
+            )}
+          <h2 className="lesson-title">{lang === 'th' ? lesson.title.th : lesson.title.en}</h2>
+          {lesson.videoUrl && (
+            completed.has(lesson.id)
+              ? <p className="inline-note done"><Check size={16} /> {t.completedWord}</p>
+              : <button className="button secondary" onClick={markDone}>{t.markComplete}</button>
+          )}
+          {note && <p className="inline-note">{note}</p>}
+        </div>
+        <aside className="course-lessons">
+          {course.lessons.map((l, i) => (
+            <button key={l.id} className={`lesson-item${i === active ? ' active' : ''}`} onClick={() => setActive(i)}>
+              <span className="lesson-idx">{completed.has(l.id) ? <Check size={14} /> : <PlayCircle size={15} />}</span>
+              <span className="lesson-name">{lang === 'th' ? l.title.th : l.title.en}{l.preview && <em className="preview-tag">{t.previewBadge}</em>}</span>
+              <span className="lesson-dur">{l.locked ? <Lock size={13} /> : l.duration}</span>
+            </button>
+          ))}
+        </aside>
+      </div>
+      <aside className="disclaimer"><Check size={18} /><p>{t.disclaimer}</p></aside>
     </section>
   );
 }

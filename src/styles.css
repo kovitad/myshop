@@ -146,5 +146,22 @@ textarea { width: 100%; border: 1px solid var(--border-silver); border-radius: 1
 .ticket-item { padding: 16px; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--surface-raised); }
 .ticket-meta { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: 6px; }
 @media (max-width: 860px) { .stat-row { grid-template-columns: 1fr; } }
+/* Courses */
+.course-meta { font-size: var(--text-sm); color: var(--text-muted); margin-top: 10px; }
+.course-player .back { margin-bottom: 20px; }
+.course-layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; margin-top: 28px; align-items: start; }
+.course-video { width: 100%; border-radius: var(--radius-lg); background: #000; aspect-ratio: 16 / 9; }
+.course-locked { aspect-ratio: 16 / 9; border: 1px solid var(--border-silver); border-radius: var(--radius-lg); background: var(--ivory-100); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; color: var(--text-muted); }
+.lesson-title { font-size: var(--text-2xl); margin-top: 20px; }
+.inline-note.done { display: inline-flex; align-items: center; gap: 6px; color: var(--green-700); }
+.course-lessons { display: grid; gap: 8px; border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 10px; background: var(--surface-raised); }
+.lesson-item { display: flex; align-items: center; gap: 10px; text-align: left; border: 0; background: transparent; padding: 12px; border-radius: var(--radius-md); color: var(--text-body); }
+.lesson-item:hover { background: var(--ivory-100); }
+.lesson-item.active { background: var(--ivory-100); box-shadow: inset 0 0 0 1px var(--border-silver); }
+.lesson-idx { width: 24px; display: grid; place-items: center; color: var(--green-600); flex: none; }
+.lesson-name { flex: 1; line-height: 1.4; }
+.preview-tag { display: block; font-style: normal; font-size: var(--text-xs, 11px); color: var(--green-600); letter-spacing: .04em; margin-top: 2px; }
+.lesson-dur { color: var(--text-muted); font-size: var(--text-sm); display: inline-flex; align-items: center; flex: none; }
+@media (max-width: 860px) { .course-layout { grid-template-columns: 1fr; } }
 html[lang="th"] h1, html[lang="th"] h2, html[lang="th"] h3 { line-height: 1.2; }
 html[lang="th"] body { line-height: 1.8; }

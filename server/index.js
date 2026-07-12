@@ -4,8 +4,8 @@ import { createReadStream, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import rateLimit from 'express-rate-limit';
 
-import { products, articles, findProduct, publicProduct, findArticle } from './content.js';
-import { users, newsletter, orders, subscriptions, downloads, tickets, visits } from './db.js';
+import { products, courses, articles, findProduct, findCourse, publicProduct, publicCourseSummary, findArticle } from './content.js';
+import { users, newsletter, orders, subscriptions, downloads, tickets, visits, progress } from './db.js';
 import { hasAccess, hasActiveMembership } from './entitlements.js';
 import { hashPassword, verifyPassword, createSession, clearSession, currentUser } from './auth.js';
 import {
@@ -82,6 +82,42 @@ function cleanEmail(email = '') {
 // --- Health + catalog --------------------------------------------------
 app.get('/api/health', (_req, res) => res.json({ ok: true, stripe: stripeEnabled }));
 app.get('/api/products', (_req, res) => res.json(products.map(publicProduct)));
+app.get('/api/courses', (_req, res) => res.json(courses.map(publicCourseSummary)));
+app.get('/api/courses/:slug', (req, res) => {
+  const course = findCourse(req.params.slug);
+  if (!course) return res.status(404).json({ error: 'Course not found' });
+  const user = currentUser(req);
+  const email = user ? user.email : null;
+  const entitled = hasAccess(email, course);
+  const done = user ? new Set(progress.forUser(user.id)) : new Set();
+  const lessons = course.lessons.map((l) => {
+    const unlocked = entitled || l.preview;
+    return {
+      id: l.id,
+      title: l.title,
+      duration: l.duration,
+      preview: Boolean(l.preview),
+      locked: !unlocked,
+      videoUrl: unlocked ? l.videoUrl : null,
+      completed: done.has(l.id),
+    };
+  });
+  res.json({
+    id: course.id, slug: course.slug, type: 'course', topic: course.topic,
+    price: course.price, priceAmount: course.priceAmount, currency: course.currency,
+    title: course.title, description: course.description, entitled, lessons,
+  });
+});
+
+app.post('/api/progress', (req, res) => {
+  const user = currentUser(req);
+  if (!user) return res.status(401).json({ error: 'Not signed in' });
+  const lessonId = String(req.body.lessonId || '').slice(0, 120);
+  if (!lessonId) return res.status(400).json({ error: 'lessonId required' });
+  progress.complete(user.id, lessonId);
+  res.json({ ok: true });
+});
+
 app.get('/api/content/articles', (_req, res) => res.json(articles));
 app.get('/api/content/articles/:slug', (req, res) => {
   const article = findArticle(req.params.slug);
