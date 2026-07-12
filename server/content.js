@@ -215,6 +215,10 @@ export const articles = [
   },
 ];
 
+// Membership is special (recurring, env-driven Stripe price) and stays in code,
+// not the admin-managed catalog.
+export const membership = products.find((p) => p.type === 'membership');
+
 export function findProduct(id) {
   return [...products, ...courses].find((p) => p.id === id) || null;
 }

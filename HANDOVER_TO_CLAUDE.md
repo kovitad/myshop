@@ -73,15 +73,30 @@
 >   TikTok @kbitidesunipo — open in new tab (header, founder, footer).
 > - Example downloadable ebooks in `ebooks/` match the 6 new product ids.
 >
+> ### Admin CMS — DONE (2026-07-12)
+> Admin login (email == `ADMIN_EMAIL`, default `kovitad@gmail.com`) can manage
+> the catalog + profile at runtime. Catalog moved from code → SQLite in
+> `server/catalog.js` (tables catalog_products, catalog_categories, settings;
+> seeded once from content.js). Membership + courses stay in code.
+> - Public reads now go through the DB: `/api/products`, `/api/categories`,
+>   `/api/catalog`, and `findProduct` (imported from catalog.js).
+> - Admin APIs (all admin-gated): `GET/PUT /api/admin/profile`,
+>   `GET/POST /api/admin/categories` + `DELETE /api/admin/categories/:key`,
+>   `GET/POST /api/admin/products` + `DELETE /api/admin/products/:id`,
+>   `POST /api/admin/ebooks/:id` (multer PDF upload → `EBOOK_UPLOAD_DIR`
+>   /data/ebooks, checked first by the download route).
+> - `/admin` UI is now tabbed: Dashboard (stats/tickets), Products (add/edit/
+>   delete + upload PDF), Categories (add/delete), Profile (founder + social).
+> - Editable profile/social surfaced via `GET /api/config` and consumed on the
+>   site through a `ConfigProvider` (FollowLinks, Header, Founder, About,
+>   Contact, ChatWidget) with SUPPORT/brand constants as fallback.
+> - `multer` added to package.json. Verified end-to-end in container.
+>
 > ### Next slices / open work
-> - **Admin CMS (requested, NOT built yet):** owner wants to manage profile,
->   add categories, and upload ebooks from an admin login. Needs the catalog
->   moved from `content.js` into DB tables (catalog_products, catalog_categories,
->   a settings/profile store) + multipart upload saving PDFs to
->   `EBOOK_UPLOAD_DIR` (/data/ebooks, already checked first by the download
->   route) + admin CRUD UI under `/admin`. This is the top next task.
 > - C: live classes (Zoom/YouTube gating). D: LINE OA / web-chat AI (chat hook
 >   ready). E: SEO prerender + deploy to Lightsail. Recorded courses (B) done.
+> - Admin course management (courses still in code) + image uploads for product
+>   covers are natural follow-ups.
 >
 > ### Env keys (all optional in dev; see `.env.example`)
 > `APP_URL DB_PATH STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET

@@ -1,10 +1,12 @@
 import express from 'express';
 import { randomUUID } from 'node:crypto';
-import { createReadStream, existsSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import rateLimit from 'express-rate-limit';
+import multer from 'multer';
 
-import { products, courses, articles, CATEGORIES, findProduct, findCourse, publicProduct, publicCourseSummary, findArticle } from './content.js';
+import { courses, articles, membership, findCourse, publicProduct, publicCourseSummary, findArticle } from './content.js';
+import { catalog, findProduct } from './catalog.js';
 import { users, newsletter, orders, subscriptions, downloads, tickets, visits, progress } from './db.js';
 import { hasAccess, hasActiveMembership } from './entitlements.js';
 import { hashPassword, verifyPassword, createSession, clearSession, currentUser } from './auth.js';
@@ -22,7 +24,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 const appUrl = process.env.APP_URL || `http://localhost:${port}`;
 const ebookDir = process.env.EBOOK_DIR || join(import.meta.dirname, '..', 'ebooks');
+const ebookUploadDir = process.env.EBOOK_UPLOAD_DIR || '/data/ebooks';
 const DOWNLOAD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 // Whoever signs in with this email is treated as the site admin.
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'kovitad@gmail.com').toLowerCase();
@@ -36,6 +40,24 @@ const CONTACT = {
 
 function isAdmin(user) {
   return Boolean(user) && String(user.email).toLowerCase() === ADMIN_EMAIL;
+}
+
+// Editable founder profile + social links (settings store, with defaults).
+const PROFILE_KEYS = ['founderName', 'founderRole', 'introTh', 'introEn', 'email', 'phone', 'lineId', 'lineUrl', 'facebook', 'youtube', 'tiktok'];
+const PROFILE_DEFAULTS = {
+  founderName: 'Kovitad Janlakhon',
+  founderRole: 'ผู้ก่อตั้งและผู้ดูแลคอนเทนต์ของ KOVITAD.shop',
+  introTh: '', introEn: '',
+  email: CONTACT.email, phone: CONTACT.phone, lineId: CONTACT.lineId,
+  lineUrl: `https://line.me/ti/p/~${CONTACT.lineId}`,
+  facebook: 'https://www.facebook.com/kovitad.janlakhon/',
+  youtube: 'https://www.youtube.com/@kovitad/videos',
+  tiktok: 'https://www.tiktok.com/@kbitidesunipo',
+};
+function getProfile() {
+  const p = {};
+  for (const k of PROFILE_KEYS) p[k] = catalog.settings.get(k, PROFILE_DEFAULTS[k]);
+  return p;
 }
 
 function readCookie(req, name) {
@@ -82,12 +104,12 @@ function cleanEmail(email = '') {
 
 // --- Health + catalog --------------------------------------------------
 app.get('/api/health', (_req, res) => res.json({ ok: true, stripe: stripeEnabled }));
-app.get('/api/products', (_req, res) => res.json(products.map(publicProduct)));
-app.get('/api/categories', (_req, res) => res.json(CATEGORIES));
+app.get('/api/products', (_req, res) => res.json([...catalog.products.all(), membership].map(publicProduct)));
+app.get('/api/categories', (_req, res) => res.json(catalog.categories.all()));
 // Unified storefront catalog: buyable ebooks/tools + courses (no membership).
 app.get('/api/catalog', (_req, res) => {
   const items = [
-    ...products.filter((p) => p.type !== 'membership').map(publicProduct),
+    ...catalog.products.all().map(publicProduct),
     ...courses.map(publicCourseSummary),
   ];
   res.json(items);
@@ -183,9 +205,15 @@ app.get('/api/me', (req, res) => {
   });
 });
 
-// Public contact/config for the frontend (env-configurable without a rebuild).
+// Public config: editable profile + social + contact for the frontend.
 app.get('/api/config', (_req, res) => {
-  res.json({ contact: CONTACT, stripe: stripeEnabled });
+  const p = getProfile();
+  res.json({
+    stripe: stripeEnabled,
+    profile: { founderName: p.founderName, founderRole: p.founderRole, introTh: p.introTh, introEn: p.introEn },
+    contact: { email: p.email, phone: p.phone, lineId: p.lineId, lineUrl: p.lineUrl },
+    social: { facebook: p.facebook, youtube: p.youtube, tiktok: p.tiktok },
+  });
 });
 
 // --- Newsletter --------------------------------------------------------
@@ -273,6 +301,95 @@ app.get('/api/admin/stats', (req, res) => {
 app.get('/api/admin/tickets', (req, res) => {
   if (!requireAdmin(req, res)) return;
   res.json(tickets.all());
+});
+
+// ── Admin CMS: profile ─────────────────────────────────────────────────
+app.get('/api/admin/profile', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json(getProfile());
+});
+app.put('/api/admin/profile', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  for (const k of PROFILE_KEYS) {
+    if (typeof req.body[k] === 'string') catalog.settings.set(k, req.body[k].slice(0, 500));
+  }
+  res.json({ ok: true, profile: getProfile() });
+});
+
+// ── Admin CMS: categories ──────────────────────────────────────────────
+app.get('/api/admin/categories', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json(catalog.categories.all());
+});
+app.post('/api/admin/categories', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const key = String(req.body.key || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const th = String(req.body.th || '').trim();
+  const en = String(req.body.en || '').trim();
+  if (!key || !th || !en) return res.status(400).json({ error: 'key, th and en are required' });
+  catalog.categories.add({ key, th, en, sort: Number(req.body.sort) || 50 });
+  res.status(201).json({ ok: true, categories: catalog.categories.all() });
+});
+app.delete('/api/admin/categories/:key', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (req.params.key === 'all') return res.status(400).json({ error: 'Cannot remove "all"' });
+  catalog.categories.remove(req.params.key);
+  res.json({ ok: true, categories: catalog.categories.all() });
+});
+
+// ── Admin CMS: products ────────────────────────────────────────────────
+app.get('/api/admin/products', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json(catalog.products.all().map((p) => ({ ...p, hasFile: existsSync(join(ebookUploadDir, `${p.id}.pdf`)) || existsSync(join(ebookDir, `${p.id}.pdf`)) })));
+});
+app.post('/api/admin/products', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const body = req.body || {};
+  const id = String(body.id || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '') ||
+    String(body.title?.en || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  if (!id) return res.status(400).json({ error: 'id or English title is required' });
+  if (!body.title?.th || !body.title?.en) return res.status(400).json({ error: 'Thai and English titles are required' });
+  const priceAmount = Number(body.priceAmount) || 0;
+  if (priceAmount < 0) return res.status(400).json({ error: 'Invalid price' });
+  catalog.products.save({
+    id,
+    type: body.type === 'course' ? 'ebook' : (body.type || 'ebook'),
+    tags: Array.isArray(body.tags) ? body.tags : [],
+    category: String(body.category || ''),
+    format: String(body.format || 'อีบุ๊ก PDF'),
+    price: String(body.price || ''),
+    promoPrice: body.promoPrice ? String(body.promoPrice) : undefined,
+    priceAmount,
+    currency: 'thb',
+    badges: { isNew: !!body.badges?.isNew, isBestseller: !!body.badges?.isBestseller, instant: body.badges?.instant !== false },
+    title: { th: String(body.title.th), en: String(body.title.en) },
+    description: { th: String(body.description?.th || ''), en: String(body.description?.en || '') },
+  });
+  res.status(201).json({ ok: true, id, products: catalog.products.all() });
+});
+app.delete('/api/admin/products/:id', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  catalog.products.remove(req.params.id);
+  res.json({ ok: true });
+});
+
+// ── Admin CMS: ebook file upload ───────────────────────────────────────
+app.post('/api/admin/ebooks/:id', upload.single('file'), (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  if (req.file.mimetype !== 'application/pdf' && !req.file.originalname.toLowerCase().endsWith('.pdf')) {
+    return res.status(400).json({ error: 'Only PDF files are allowed' });
+  }
+  const id = String(req.params.id).toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (!catalog.products.byId(id)) return res.status(404).json({ error: 'Product not found' });
+  try {
+    if (!existsSync(ebookUploadDir)) mkdirSync(ebookUploadDir, { recursive: true });
+    writeFileSync(join(ebookUploadDir, `${id}.pdf`), req.file.buffer);
+    res.json({ ok: true, size: req.file.size });
+  } catch (err) {
+    console.error('[upload] failed:', err.message);
+    res.status(500).json({ error: 'Could not save file' });
+  }
 });
 
 // --- Checkout (one-time) ----------------------------------------------
@@ -406,8 +523,7 @@ app.get('/api/download/:token', (req, res) => {
   if (!hasAccess(record.email, product)) return res.status(403).json({ error: 'Not entitled' });
 
   // Prefer an admin-uploaded file in the persistent volume, then the baked-in one.
-  const uploadDir = process.env.EBOOK_UPLOAD_DIR || '/data/ebooks';
-  const uploaded = join(uploadDir, `${record.product_id}.pdf`);
+  const uploaded = join(ebookUploadDir, `${record.product_id}.pdf`);
   const filePath = existsSync(uploaded) ? uploaded : join(ebookDir, `${record.product_id}.pdf`);
   if (!existsSync(filePath)) {
     console.error('[download] missing file:', filePath);

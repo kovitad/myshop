@@ -228,6 +228,31 @@ function CartProvider({ children }: { children: React.ReactNode }) {
   return <CartContext.Provider value={{ items, add, remove, clear, open, setOpen }}>{children}</CartContext.Provider>;
 }
 
+// ── Editable site config (founder profile + social), from /api/config ────
+type SiteConfig = {
+  profile: { founderName: string; founderRole: string; introTh: string; introEn: string };
+  contact: { email: string; phone: string; lineId: string; lineUrl: string };
+  social: { facebook: string; youtube: string; tiktok: string };
+};
+const defaultConfig: SiteConfig = {
+  profile: { founderName: 'Kovitad Janlakhon', founderRole: brand.th.founderRole, introTh: '', introEn: '' },
+  contact: { email: SUPPORT.email, phone: SUPPORT.phone, lineId: SUPPORT.lineId, lineUrl: SUPPORT.lineUrl },
+  social: { facebook: SUPPORT.facebook, youtube: SUPPORT.youtube, tiktok: SUPPORT.tiktok },
+};
+const ConfigContext = React.createContext<SiteConfig>(defaultConfig);
+const useConfig = () => React.useContext(ConfigContext);
+function ConfigProvider({ children }: { children: React.ReactNode }) {
+  const [cfg, setCfg] = React.useState<SiteConfig>(defaultConfig);
+  React.useEffect(() => {
+    fetch('/api/config').then((r) => r.json()).then((d) => setCfg((c) => ({
+      profile: { ...c.profile, ...d.profile },
+      contact: { ...c.contact, ...d.contact },
+      social: { ...c.social, ...d.social },
+    }))).catch(() => {});
+  }, []);
+  return <ConfigContext.Provider value={cfg}>{children}</ConfigContext.Provider>;
+}
+
 const copy = {
   th: {
     nav: { home: 'หน้าแรก', library: 'คลังความรู้', article: 'บทความตัวอย่าง' },
@@ -560,6 +585,7 @@ function App() {
   };
 
   return (
+    <ConfigProvider>
     <CartProvider>
       <Header route={route} lang={lang} setLang={setLang} nav={nav} menuOpen={menuOpen} setMenuOpen={setMenuOpen} user={user} />
       <main>
@@ -585,6 +611,7 @@ function App() {
       <CartDrawer lang={lang} nav={nav} />
       <ChatWidget lang={lang} />
     </CartProvider>
+    </ConfigProvider>
   );
 }
 
@@ -607,6 +634,7 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
   const t = copy[lang];
   const b = brand[lang];
   const cart = useCart();
+  const cfg = useConfig();
   return (
     <header className="site-header">
       <button className="brand-button" onClick={() => nav('/')} aria-label="KOVITAD.shop home"><Wordmark /></button>
@@ -615,13 +643,13 @@ function Header({ route, lang, setLang, nav, menuOpen, setMenuOpen, user }: {
           <button key={label + i} className={route === href && href !== '/shop' ? 'active' : ''} onClick={() => nav(href)}>{label}</button>
         ))}
         <div className="nav-social">
-          <a href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
-          <a href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={18} /></a>
-          <a href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><TikTok size={18} /></a>
+          <a href={cfg.social.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
+          <a href={cfg.social.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={18} /></a>
+          <a href={cfg.social.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><TikTok size={18} /></a>
         </div>
       </nav>
       <div className="header-actions">
-        <a className="btn-follow k-shine" href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer">{b.followCta}</a>
+        <a className="btn-follow k-shine" href={cfg.social.youtube} target="_blank" rel="noopener noreferrer">{b.followCta}</a>
         <button className="icon-btn cart-btn" onClick={() => cart.setOpen(true)} aria-label={b.cartTitle}>
           <ShoppingCart size={20} />{cart.items.length > 0 && <span className="cart-count">{cart.items.length}</span>}
         </button>
@@ -817,20 +845,27 @@ function ContentSection({ lang }: { lang: Lang }) {
   );
 }
 
+function founderGreeting(lang: Lang, name: string) {
+  return lang === 'th' ? `สวัสดีครับ ผม ${name}` : `Hi, I'm ${name}`;
+}
+
 function FounderTeaser({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const b = brand[lang];
+  const cfg = useConfig();
+  const intro = (lang === 'th' ? cfg.profile.introTh : cfg.profile.introEn) || b.founderText;
+  const initials = cfg.profile.founderName.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <section className="founder">
       <div className="founder-grid container">
-        <div className="founder-portrait"><span>KJ</span></div>
+        <div className="founder-portrait"><span>{initials}</span></div>
         <div className="founder-copy">
-          <p className="k-eyebrow">{b.founderRole}</p>
-          <h2>{b.founderHi}</h2>
-          <p className="founder-text">{b.founderText}</p>
+          <p className="k-eyebrow">{cfg.profile.founderRole}</p>
+          <h2>{founderGreeting(lang, cfg.profile.founderName)}</h2>
+          <p className="founder-text">{intro}</p>
           <div className="founder-actions">
-            <a className="button primary" href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer">{b.followYouTube}</a>
-            <a className="button ghost" href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer">{b.followFacebook}</a>
-            <a className="button ghost" href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer">{b.followTikTok}</a>
+            <a className="button primary" href={cfg.social.youtube} target="_blank" rel="noopener noreferrer">{b.followYouTube}</a>
+            <a className="button ghost" href={cfg.social.facebook} target="_blank" rel="noopener noreferrer">{b.followFacebook}</a>
+            <a className="button ghost" href={cfg.social.tiktok} target="_blank" rel="noopener noreferrer">{b.followTikTok}</a>
           </div>
           <button className="text-link" onClick={() => nav('/about')}>{b.aboutTitle}<ArrowRight size={15} /></button>
         </div>
@@ -890,17 +925,20 @@ function Shop({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
 
 function About({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const b = brand[lang];
+  const cfg = useConfig();
+  const intro = (lang === 'th' ? cfg.profile.introTh : cfg.profile.introEn) || b.founderText;
+  const initials = cfg.profile.founderName.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <section className="page container about">
       <p className="k-eyebrow">{b.aboutTitle}</p>
-      <h1>{b.founderHi}</h1>
-      <p className="about-role">{b.founderRole}</p>
-      <div className="founder-portrait large"><span>KJ</span></div>
-      <p className="founder-text about-text">{b.founderText}</p>
+      <h1>{founderGreeting(lang, cfg.profile.founderName)}</h1>
+      <p className="about-role">{cfg.profile.founderRole}</p>
+      <div className="founder-portrait large"><span>{initials}</span></div>
+      <p className="founder-text about-text">{intro}</p>
       <div className="founder-actions">
-        <a className="button primary" href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer">{b.followYouTube}</a>
-        <a className="button ghost" href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer">{b.followFacebook}</a>
-        <a className="button ghost" href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer">{b.followTikTok}</a>
+        <a className="button primary" href={cfg.social.youtube} target="_blank" rel="noopener noreferrer">{b.followYouTube}</a>
+        <a className="button ghost" href={cfg.social.facebook} target="_blank" rel="noopener noreferrer">{b.followFacebook}</a>
+        <a className="button ghost" href={cfg.social.tiktok} target="_blank" rel="noopener noreferrer">{b.followTikTok}</a>
       </div>
       <aside className="disclaimer"><Check size={18} /><p>{b.disclaimer}</p></aside>
     </section>
@@ -1353,12 +1391,13 @@ function CoursePlayer({ slug, lang, nav, user }: { slug: string; lang: Lang; nav
 }
 
 function FollowLinks() {
+  const cfg = useConfig();
   return (
     <div className="follow-links">
-      <a href={SUPPORT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={20} /></a>
-      <a href={SUPPORT.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={20} /></a>
-      <a href={SUPPORT.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><TikTok size={20} /></a>
-      <a href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer" aria-label="LINE"><MessageCircle size={20} /></a>
+      <a href={cfg.social.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={20} /></a>
+      <a href={cfg.social.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={20} /></a>
+      <a href={cfg.social.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><TikTok size={20} /></a>
+      <a href={cfg.contact.lineUrl} target="_blank" rel="noopener noreferrer" aria-label="LINE"><MessageCircle size={20} /></a>
     </div>
   );
 }
@@ -1403,6 +1442,7 @@ function TicketForm({ lang }: { lang: Lang }) {
 
 function Contact({ lang }: { lang: Lang }) {
   const t = copy[lang];
+  const cfg = useConfig();
   return (
     <section className="page container contact">
       <p className="k-eyebrow">{t.contactNav}</p>
@@ -1411,9 +1451,9 @@ function Contact({ lang }: { lang: Lang }) {
         ? 'มีคำถามเกี่ยวกับคู่มือ คอร์ส หรือการชำระเงิน? ทักหาเราได้เลย เรามักตอบกลับภายในหนึ่งวันทำการ'
         : 'Questions about a guide, a course, or your order? Reach us here — we usually reply within one business day.'}</p>
       <div className="contact-actions">
-        <a className="button primary" href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={16} />{t.lineLabel}: {SUPPORT.lineId}</a>
-        <a className="button secondary" href={`tel:${SUPPORT.phone}`}><Phone size={16} />{SUPPORT.phone}</a>
-        <a className="button secondary" href={`mailto:${SUPPORT.email}`}><Mail size={16} />{SUPPORT.email}</a>
+        <a className="button primary" href={cfg.contact.lineUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={16} />{t.lineLabel}: {cfg.contact.lineId}</a>
+        <a className="button secondary" href={`tel:${cfg.contact.phone}`}><Phone size={16} />{cfg.contact.phone}</a>
+        <a className="button secondary" href={`mailto:${cfg.contact.email}`}><Mail size={16} />{cfg.contact.email}</a>
       </div>
       <p className="k-eyebrow follow-eyebrow">{t.followUs}</p>
       <FollowLinks />
@@ -1424,6 +1464,7 @@ function Contact({ lang }: { lang: Lang }) {
 
 function ChatWidget({ lang }: { lang: Lang }) {
   const t = copy[lang];
+  const chatCfg = useConfig();
   type Msg = { from: 'user' | 'bot'; text: string };
   const [open, setOpen] = React.useState(false);
   const [msgs, setMsgs] = React.useState<Msg[]>([{ from: 'bot', text: t.chatGreeting }]);
@@ -1469,9 +1510,9 @@ function ChatWidget({ lang }: { lang: Lang }) {
             <div ref={endRef} />
           </div>
           <div className="chat-quick">
-            <a href={SUPPORT.lineUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={15} />{t.lineLabel}</a>
-            <a href={`tel:${SUPPORT.phone}`}><Phone size={15} />{t.callLabel}</a>
-            <a href={`mailto:${SUPPORT.email}`}><Mail size={15} />{t.emailLabelShort}</a>
+            <a href={chatCfg.contact.lineUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={15} />{t.lineLabel}</a>
+            <a href={`tel:${chatCfg.contact.phone}`}><Phone size={15} />{t.callLabel}</a>
+            <a href={`mailto:${chatCfg.contact.email}`}><Mail size={15} />{t.emailLabelShort}</a>
           </div>
           <form className="chat-input" onSubmit={send}>
             <input value={text} onChange={(e) => setText(e.target.value)} placeholder={t.chatPlaceholder} aria-label={t.chatPlaceholder} />
@@ -1486,23 +1527,17 @@ function ChatWidget({ lang }: { lang: Lang }) {
   );
 }
 
+type AdminProduct = CatalogItem & { hasFile?: boolean };
+
 function Admin({ lang, nav, user }: { lang: Lang; nav: (r: Route) => void; user: User }) {
   const t = copy[lang];
-  type Stats = { totalViews: number; uniqueVisitors: number; viewsToday: number; topPaths: { path: string; n: number }[]; recent: { id: number; path: string; referrer: string | null; created_at: string }[] };
-  type Ticket = { id: string; name: string | null; email: string; subject: string | null; message: string; created_at: string };
-  const [stats, setStats] = React.useState<Stats | null>(null);
-  const [tix, setTix] = React.useState<Ticket[]>([]);
-  React.useEffect(() => {
-    if (!user?.admin) return;
-    fetch('/api/admin/stats').then((r) => (r.ok ? r.json() : null)).then(setStats).catch(() => {});
-    fetch('/api/admin/tickets').then((r) => (r.ok ? r.json() : [])).then((d) => setTix(Array.isArray(d) ? d : [])).catch(() => {});
-  }, [user]);
+  const [tab, setTab] = React.useState<'dashboard' | 'products' | 'categories' | 'profile'>('dashboard');
+  const th = lang === 'th';
 
   if (!user) {
     return (
       <section className="page container">
-        <p className="k-eyebrow">{t.adminTitle}</p>
-        <h1>{t.adminTitle}</h1>
+        <p className="k-eyebrow">{t.adminTitle}</p><h1>{t.adminTitle}</h1>
         <p className="lede">{t.accountSignedOut}</p>
         <button className="button primary" onClick={() => nav('/login')}>{t.signIn}</button>
       </section>
@@ -1511,17 +1546,47 @@ function Admin({ lang, nav, user }: { lang: Lang; nav: (r: Route) => void; user:
   if (!user.admin) {
     return (
       <section className="page container">
-        <p className="k-eyebrow">{t.adminTitle}</p>
-        <h1>{t.adminTitle}</h1>
+        <p className="k-eyebrow">{t.adminTitle}</p><h1>{t.adminTitle}</h1>
         <p className="lede">{t.adminDenied}</p>
       </section>
     );
   }
-  const fmt = (iso: string) => new Date(iso).toLocaleString();
+  const tabs: Array<[typeof tab, string]> = [
+    ['dashboard', th ? 'ภาพรวม' : 'Dashboard'],
+    ['products', th ? 'สินค้า' : 'Products'],
+    ['categories', th ? 'หมวดหมู่' : 'Categories'],
+    ['profile', th ? 'โปรไฟล์' : 'Profile'],
+  ];
   return (
     <section className="page container admin">
       <p className="k-eyebrow">{t.adminTitle}</p>
       <h1>{t.adminTitle}</h1>
+      <div className="admin-tabs">
+        {tabs.map(([key, label]) => (
+          <button key={key} className={`admin-tab${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>{label}</button>
+        ))}
+      </div>
+      {tab === 'dashboard' && <AdminDashboard lang={lang} user={user} />}
+      {tab === 'products' && <AdminProducts lang={lang} />}
+      {tab === 'categories' && <AdminCategories lang={lang} />}
+      {tab === 'profile' && <AdminProfile lang={lang} />}
+    </section>
+  );
+}
+
+function AdminDashboard({ lang, user }: { lang: Lang; user: User }) {
+  const t = copy[lang];
+  type Stats = { totalViews: number; uniqueVisitors: number; viewsToday: number; topPaths: { path: string; n: number }[]; recent: { id: number; path: string; referrer: string | null; created_at: string }[] };
+  type Ticket = { id: string; email: string; subject: string | null; message: string; created_at: string };
+  const [stats, setStats] = React.useState<Stats | null>(null);
+  const [tix, setTix] = React.useState<Ticket[]>([]);
+  React.useEffect(() => {
+    fetch('/api/admin/stats').then((r) => (r.ok ? r.json() : null)).then(setStats).catch(() => {});
+    fetch('/api/admin/tickets').then((r) => (r.ok ? r.json() : [])).then((d) => setTix(Array.isArray(d) ? d : [])).catch(() => {});
+  }, [user]);
+  const fmt = (iso: string) => new Date(iso).toLocaleString();
+  return (
+    <>
       <div className="stat-row">
         <div className="stat-card"><strong>{stats?.totalViews ?? '—'}</strong><span>{t.statViews}</span></div>
         <div className="stat-card"><strong>{stats?.uniqueVisitors ?? '—'}</strong><span>{t.statUnique}</span></div>
@@ -1545,7 +1610,186 @@ function Admin({ lang, nav, user }: { lang: Lang; nav: (r: Route) => void; user:
           </article>
         ))}
       </div>
-    </section>
+    </>
+  );
+}
+
+function AdminProducts({ lang }: { lang: Lang }) {
+  const th = lang === 'th';
+  const [items, setItems] = React.useState<AdminProduct[]>([]);
+  const [cats, setCats] = React.useState<Category[]>([]);
+  const empty = { id: '', titleTh: '', titleEn: '', descTh: '', descEn: '', category: '', format: 'อีบุ๊ก PDF', baht: '', promoBaht: '', tags: '', isNew: false, isBest: false };
+  const [form, setForm] = React.useState({ ...empty });
+  const [note, setNote] = React.useState('');
+  const load = () => {
+    fetch('/api/admin/products').then((r) => r.json()).then((d) => setItems(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch('/api/categories').then((r) => r.json()).then((d) => setCats(Array.isArray(d) ? d : [])).catch(() => {});
+  };
+  React.useEffect(load, []);
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm({ ...form, [k]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value });
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNote('');
+    const baht = Number(form.baht) || 0;
+    const promo = Number(form.promoBaht) || 0;
+    const tags = form.tags.split(',').map((s) => s.trim()).filter(Boolean);
+    const body = {
+      id: form.id, type: 'ebook', category: form.category, format: form.format,
+      price: `฿${baht}`, promoPrice: promo ? `฿${promo}` : undefined, priceAmount: (promo || baht) * 100,
+      tags: tags.length ? tags : (form.category ? [form.category, 'ebook'] : ['ebook']),
+      badges: { isNew: form.isNew, isBestseller: form.isBest, instant: true },
+      title: { th: form.titleTh, en: form.titleEn }, description: { th: form.descTh, en: form.descEn },
+    };
+    const res = await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) { setNote(th ? 'บันทึกแล้ว' : 'Saved'); setForm({ ...empty }); load(); }
+    else setNote(data.error || 'Error');
+  };
+  const edit = (p: AdminProduct) => setForm({
+    id: p.id, titleTh: p.title.th, titleEn: p.title.en, descTh: p.description.th, descEn: p.description.en,
+    category: p.category, format: p.format, baht: String(Math.round((p.priceAmount || 0) / 100)),
+    promoBaht: p.promoPrice ? p.promoPrice.replace(/[^0-9]/g, '') : '', tags: (p.tags || []).join(', '),
+    isNew: !!p.badges?.isNew, isBest: !!p.badges?.isBestseller,
+  });
+  const del = async (id: string) => { await fetch(`/api/admin/products/${id}`, { method: 'DELETE' }); load(); };
+  const uploadFile = async (id: string, file: File) => {
+    setNote(th ? 'กำลังอัปโหลด…' : 'Uploading…');
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`/api/admin/ebooks/${id}`, { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    setNote(res.ok ? (th ? 'อัปโหลดไฟล์แล้ว' : 'File uploaded') : (data.error || 'Upload failed'));
+    load();
+  };
+  return (
+    <div className="admin-panel">
+      <form className="admin-form" onSubmit={save}>
+        <h2>{form.id ? (th ? 'แก้ไขสินค้า' : 'Edit product') : (th ? 'เพิ่มสินค้าใหม่' : 'Add a product')}</h2>
+        <div className="admin-grid2">
+          <label>{th ? 'ชื่อ (ไทย)' : 'Title (Thai)'}<input value={form.titleTh} onChange={set('titleTh')} required /></label>
+          <label>{th ? 'ชื่อ (อังกฤษ)' : 'Title (English)'}<input value={form.titleEn} onChange={set('titleEn')} required /></label>
+        </div>
+        <div className="admin-grid2">
+          <label>{th ? 'คำอธิบาย (ไทย)' : 'Description (Thai)'}<textarea rows={2} value={form.descTh} onChange={set('descTh')} /></label>
+          <label>{th ? 'คำอธิบาย (อังกฤษ)' : 'Description (English)'}<textarea rows={2} value={form.descEn} onChange={set('descEn')} /></label>
+        </div>
+        <div className="admin-grid3">
+          <label>{th ? 'หมวดหมู่' : 'Category'}
+            <select value={form.category} onChange={set('category')}>
+              <option value="">—</option>
+              {cats.filter((c) => c.key !== 'all').map((c) => <option key={c.key} value={th ? c.th : c.en}>{th ? c.th : c.en}</option>)}
+            </select>
+          </label>
+          <label>{th ? 'รูปแบบ' : 'Format'}<input value={form.format} onChange={set('format')} /></label>
+          <label>{th ? 'แท็ก (คั่นด้วย ,)' : 'Tags (comma)'}<input value={form.tags} onChange={set('tags')} placeholder="health, ebook" /></label>
+        </div>
+        <div className="admin-grid3">
+          <label>{th ? 'ราคา (฿)' : 'Price (฿)'}<input type="number" value={form.baht} onChange={set('baht')} required /></label>
+          <label>{th ? 'ราคาโปรฯ (฿)' : 'Promo (฿)'}<input type="number" value={form.promoBaht} onChange={set('promoBaht')} /></label>
+          <div className="admin-checks">
+            <label className="chk"><input type="checkbox" checked={form.isNew} onChange={set('isNew')} />{th ? 'ใหม่' : 'New'}</label>
+            <label className="chk"><input type="checkbox" checked={form.isBest} onChange={set('isBest')} />{th ? 'ขายดี' : 'Bestseller'}</label>
+          </div>
+        </div>
+        <div className="admin-actions">
+          <button className="button primary" type="submit">{th ? 'บันทึกสินค้า' : 'Save product'}</button>
+          {form.id && <button type="button" className="button ghost" onClick={() => setForm({ ...empty })}>{th ? 'ล้างฟอร์ม' : 'Clear'}</button>}
+          <span className="inline-note">{note}</span>
+        </div>
+      </form>
+
+      <div className="admin-list">
+        {items.map((p) => (
+          <article className="admin-item" key={p.id}>
+            <div className="admin-item-main">
+              <strong>{th ? p.title.th : p.title.en}</strong>
+              <span className="admin-item-meta">{p.category} · {p.promoPrice || p.price} · {p.hasFile ? (th ? 'มีไฟล์' : 'file ✓') : (th ? 'ยังไม่มีไฟล์' : 'no file')}</span>
+            </div>
+            <div className="admin-item-actions">
+              <label className="upload-btn">{th ? 'อัปโหลด PDF' : 'Upload PDF'}
+                <input type="file" accept="application/pdf" hidden onChange={(e) => e.target.files?.[0] && uploadFile(p.id, e.target.files[0])} />
+              </label>
+              <button className="btn-detail" onClick={() => edit(p)}>{th ? 'แก้ไข' : 'Edit'}</button>
+              <button className="icon-danger" onClick={() => del(p.id)} aria-label="Delete"><Trash2 size={16} /></button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AdminCategories({ lang }: { lang: Lang }) {
+  const th = lang === 'th';
+  const [cats, setCats] = React.useState<Category[]>([]);
+  const [form, setForm] = React.useState({ key: '', th: '', en: '' });
+  const [note, setNote] = React.useState('');
+  const load = () => { fetch('/api/admin/categories').then((r) => r.json()).then((d) => setCats(Array.isArray(d) ? d : [])).catch(() => {}); };
+  React.useEffect(load, []);
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch('/api/admin/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) { setForm({ key: '', th: '', en: '' }); setNote(th ? 'เพิ่มแล้ว' : 'Added'); load(); }
+    else setNote(data.error || 'Error');
+  };
+  const del = async (key: string) => { await fetch(`/api/admin/categories/${key}`, { method: 'DELETE' }); load(); };
+  return (
+    <div className="admin-panel">
+      <form className="admin-form" onSubmit={add}>
+        <h2>{th ? 'เพิ่มหมวดหมู่' : 'Add category'}</h2>
+        <div className="admin-grid3">
+          <label>key<input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder="mindset" required /></label>
+          <label>{th ? 'ชื่อ (ไทย)' : 'Label (Thai)'}<input value={form.th} onChange={(e) => setForm({ ...form, th: e.target.value })} required /></label>
+          <label>{th ? 'ชื่อ (อังกฤษ)' : 'Label (English)'}<input value={form.en} onChange={(e) => setForm({ ...form, en: e.target.value })} required /></label>
+        </div>
+        <div className="admin-actions"><button className="button primary" type="submit">{th ? 'เพิ่ม' : 'Add'}</button><span className="inline-note">{note}</span></div>
+      </form>
+      <div className="admin-list">
+        {cats.map((c) => (
+          <article className="admin-item" key={c.key}>
+            <div className="admin-item-main"><strong>{c.th} / {c.en}</strong><span className="admin-item-meta">{c.key}</span></div>
+            {c.key !== 'all' && <button className="icon-danger" onClick={() => del(c.key)} aria-label="Delete"><Trash2 size={16} /></button>}
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AdminProfile({ lang }: { lang: Lang }) {
+  const th = lang === 'th';
+  const fields: Array<[string, string]> = [
+    ['founderName', th ? 'ชื่อผู้ก่อตั้ง' : 'Founder name'],
+    ['founderRole', th ? 'ตำแหน่ง' : 'Role'],
+    ['introTh', th ? 'แนะนำตัว (ไทย)' : 'Intro (Thai)'],
+    ['introEn', th ? 'แนะนำตัว (อังกฤษ)' : 'Intro (English)'],
+    ['email', 'Email'], ['phone', th ? 'โทรศัพท์' : 'Phone'], ['lineId', 'LINE ID'], ['lineUrl', 'LINE URL'],
+    ['facebook', 'Facebook URL'], ['youtube', 'YouTube URL'], ['tiktok', 'TikTok URL'],
+  ];
+  const [data, setData] = React.useState<Record<string, string>>({});
+  const [note, setNote] = React.useState('');
+  React.useEffect(() => { fetch('/api/admin/profile').then((r) => r.json()).then((d) => setData(d || {})).catch(() => {}); }, []);
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch('/api/admin/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    setNote(res.ok ? (th ? 'บันทึกโปรไฟล์แล้ว' : 'Profile saved') : 'Error');
+  };
+  return (
+    <div className="admin-panel">
+      <form className="admin-form" onSubmit={save}>
+        <h2>{th ? 'โปรไฟล์และโซเชียล' : 'Profile & social'}</h2>
+        {fields.map(([key, label]) => (
+          <label key={key} className="admin-field">{label}
+            {key.startsWith('intro')
+              ? <textarea rows={3} value={data[key] || ''} onChange={(e) => setData({ ...data, [key]: e.target.value })} />
+              : <input value={data[key] || ''} onChange={(e) => setData({ ...data, [key]: e.target.value })} />}
+          </label>
+        ))}
+        <div className="admin-actions"><button className="button primary" type="submit">{th ? 'บันทึก' : 'Save'}</button><span className="inline-note">{note}</span></div>
+      </form>
+    </div>
   );
 }
 
