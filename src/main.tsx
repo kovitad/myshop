@@ -1081,9 +1081,12 @@ function OrderSuccess({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
   const t = copy[lang];
   const [state, setState] = React.useState<'loading' | 'paid' | 'pending' | 'error'>('loading');
   const [downloadUrl, setDownloadUrl] = React.useState('');
+  const [needsEmail, setNeedsEmail] = React.useState(false);
+  const [email, setEmail] = React.useState('');
+  const [note, setNote] = React.useState('');
+  const sessionId = new URLSearchParams(window.location.search).get('session_id') || '';
 
   React.useEffect(() => {
-    const sessionId = new URLSearchParams(window.location.search).get('session_id');
     if (!sessionId) { setState('error'); return; }
     let cancelled = false;
     let tries = 0;
@@ -1094,7 +1097,7 @@ function OrderSuccess({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
         if (!res.ok) { if (tries < 8 && !cancelled) setTimeout(poll, 1500); else setState('error'); return; }
         const data = await res.json();
         if (cancelled) return;
-        if (data.status === 'paid') { setDownloadUrl(data.downloadUrl || ''); setState('paid'); }
+        if (data.status === 'paid') { setDownloadUrl(data.downloadUrl || ''); setNeedsEmail(!!data.needsEmail); setState('paid'); }
         else if (tries < 8) setTimeout(poll, 1500);
         else setState('pending');
       } catch {
@@ -1103,7 +1106,21 @@ function OrderSuccess({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
     };
     poll();
     return () => { cancelled = true; };
-  }, []);
+  }, [sessionId]);
+
+  // Reveal the download only after the buyer confirms the purchase email.
+  const reveal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNote('');
+    try {
+      const res = await fetch(`/api/orders/session/${encodeURIComponent(sessionId)}?email=${encodeURIComponent(email)}`);
+      const data = await res.json().catch(() => ({}));
+      if (data.downloadUrl) { setDownloadUrl(data.downloadUrl); setNeedsEmail(false); }
+      else setNote(lang === 'th' ? 'อีเมลไม่ตรงกับคำสั่งซื้อ' : 'That email does not match this order');
+    } catch {
+      setNote(lang === 'th' ? 'เกิดข้อผิดพลาด' : 'Something went wrong');
+    }
+  };
 
   return (
     <section className="page container order-status">
@@ -1114,6 +1131,16 @@ function OrderSuccess({ lang, nav }: { lang: Lang; nav: (r: Route) => void }) {
         <>
           <p className="lede">{t.successBody}</p>
           {downloadUrl && <a className="button primary k-shine" href={downloadUrl}>{t.successDownload}</a>}
+          {!downloadUrl && needsEmail && (
+            <form className="reveal-form" onSubmit={reveal}>
+              <p>{lang === 'th' ? 'ยืนยันอีเมลที่ใช้ชำระเงินเพื่อรับลิงก์ดาวน์โหลด' : 'Confirm the email you paid with to get your download link'}</p>
+              <div className="reveal-row">
+                <input type="email" required value={email} onChange={(ev) => setEmail(ev.target.value)} placeholder={t.emailLabel} aria-label={t.emailLabel} />
+                <button className="button primary" type="submit">{t.successDownload}</button>
+              </div>
+              <span className="inline-note">{note}</span>
+            </form>
+          )}
         </>
       )}
       <div className="order-actions">

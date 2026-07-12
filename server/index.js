@@ -101,6 +101,23 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), (req
 
 app.use(express.json({ limit: '32kb' }));
 
+// CSRF defense: reject cross-origin state-changing requests. Browsers always
+// send an Origin header on POST/PUT/DELETE; a genuine same-origin request from
+// our SPA matches the host, a forged cross-site request does not. The Stripe
+// webhook is mounted earlier (before express.json) and is signature-verified,
+// so it never reaches this guard. Non-browser clients send no Origin.
+app.use((req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    const origin = req.headers.origin;
+    if (origin) {
+      let host;
+      try { host = new URL(origin).host; } catch { return res.status(403).json({ error: 'Bad origin' }); }
+      if (host !== req.headers.host) return res.status(403).json({ error: 'Cross-origin request blocked' });
+    }
+  }
+  next();
+});
+
 const writeLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
 
 function clientEmail(req) {
@@ -507,11 +524,19 @@ app.get('/api/orders/session/:sessionId', async (req, res) => {
 
   if (!order) return res.status(404).json({ error: 'Order not found', status: 'pending' });
   const product = findProduct(order.product_id);
-  const download = order.status === 'paid' ? downloads.byOrder(order.id) : null;
+
+  // The download link is bound to the buyer: reveal it only to someone who
+  // proves the purchase email (signed-in user OR the email echoed back on the
+  // success page). Knowing the session id alone is not enough. The link is also
+  // emailed to the buyer regardless.
+  const provided = cleanEmail(req.query.email) || clientEmail(req);
+  const authorized = Boolean(provided) && provided === order.email;
+  const download = order.status === 'paid' && authorized ? downloads.byOrder(order.id) : null;
   res.json({
     status: order.status,
     product: product ? publicProduct(product) : null,
     downloadUrl: download ? `${appUrl}/api/download/${download.token}` : null,
+    needsEmail: order.status === 'paid' && !authorized,
   });
 });
 
